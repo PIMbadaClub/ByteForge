@@ -240,7 +240,7 @@ function sendMessage() {
   input.value = "";
   showTyping();
 
-  // delay para simular "pensamento" do ByteBot
+  // delay para simular "pensamento" do ByteForge
   const delay = 600 + Math.random() * 500;
   setTimeout(() => {
     hideTyping();
@@ -429,7 +429,7 @@ setTimeout(schedulePensamento, 8000); // primeiro após 8 s
 
 // Olhos seguem o mouse em X e Y
 document.addEventListener("mousemove", (e) => {
-  const svgRect = document.getElementById("bytebot").getBoundingClientRect();
+  const svgRect = document.getElementById("byteforge").getBoundingClientRect();
   const svgCX = svgRect.left + svgRect.width / 2;
   const svgCY = svgRect.top + svgRect.height / 2;
 

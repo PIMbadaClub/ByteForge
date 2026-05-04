@@ -11,11 +11,11 @@ const brain = [
       "boa noite",
       "tudo",
     ],
-    text: "Olá, dev! Sou o ByteBot, seu assistente de programação.Posso ajudar com JavaScript, Python, Git, CSS, APIs, TypeScript, Docker e muito mais.\nO que vamos aprender hoje?",
+    text: "Olá, dev! Sou o ByteForge, seu assistente de programação.Posso ajudar com JavaScript, Python, Git, CSS, APIs, TypeScript, Docker e muito mais.\nO que vamos aprender hoje?",
   },
   {
-    keys: ["quem", "você", "voce", "bytebot", "o que é", "o que voce"],
-    text: "Sou o ByteBot — um assistente de programação criado para ajudar devs.Fui treinado para responder dúvidas sobre código, linguagens, ferramentas e boas práticas.\nUse os chips abaixo ou escreva qualquer tópico de programação!",
+    keys: ["quem", "você", "voce", "byteforge", "o que é", "o que voce"],
+    text: "Sou o ByteForge — um assistente de programação criado para ajudar devs.Fui treinado para responder dúvidas sobre código, linguagens, ferramentas e boas práticas.\nUse os chips abaixo ou escreva qualquer tópico de programação!",
   },
   {
     keys: ["javascript", " js ", "js,", "var ", "const ", "let "],
@@ -2854,7 +2854,7 @@ const fibMemo = memoizar(fib);`,
 </div>
 
 <!-- Imagens -->
-<img src="logo.png" alt="Logo DevAssist — ByteBot">
+<img src="logo.png" alt="Logo DevAssist — ByteForge">
 <img src="decorativa.png" alt=""> <!-- alt vazio = decorativa -->
 
 <!-- Formulário acessível -->
