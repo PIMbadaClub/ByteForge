@@ -43,6 +43,7 @@ function addMsg(text, side, options = {}) {
   wrap.appendChild(bubble);
   wrap.appendChild(time);
   chatWin.appendChild(wrap);
+  scrollDown(true);
 }
 
 function escapeHtml(text) {
@@ -294,6 +295,7 @@ function addCodeBlock(code, lang) {
   block.appendChild(header);
   block.appendChild(pre);
   chatWin.appendChild(block);
+  scrollDown(true);
 }
 
 // ════════════════════════════════════════════════════════════
@@ -376,7 +378,10 @@ function clearChat() {
 }
 
 function scrollDown(smooth = false) {
-  return;
+  chatWin.scrollTo({
+    top: chatWin.scrollHeight,
+    behavior: smooth ? "smooth" : "auto",
+  });
 }
 
 // ════════════════════════════════════════════════════════════

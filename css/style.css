@@ -244,6 +244,7 @@ body {
 /* ── CHAT WINDOW ──────────────────────────────────────────── */
 #chat-window {
     flex: 1;
+    min-height: 0; /* Permite scroll correto em layout Flexbox */
     padding: 16px;
     overflow-y: auto;
     scroll-behavior: smooth;
@@ -468,7 +469,7 @@ body {
     border-radius: 10px;
     padding: 10px 14px;
     color: var(--text);
-    font-size: 14px;
+    font-size: 16px; /* Evita zoom automático no iOS */
     font-family: inherit;
     transition: border-color .2s, box-shadow .2s;
     text-overflow: ellipsis;
