@@ -21,13 +21,17 @@ updateClock();
 // ════════════════════════════════════════════════════════════
 // ADICIONAR MENSAGEM DE TEXTO
 // ════════════════════════════════════════════════════════════
-function addMsg(text, side) {
+function addMsg(text, side, options = {}) {
   const wrap = document.createElement("div");
   wrap.className = `msg-wrap ${side}`;
 
   const bubble = document.createElement("div");
   bubble.className = "msg";
-  bubble.textContent = text;
+  if (options.html) {
+    bubble.innerHTML = text;
+  } else {
+    bubble.textContent = text;
+  }
 
   const time = document.createElement("span");
   time.className = "msg-time";
@@ -39,7 +43,99 @@ function addMsg(text, side) {
   wrap.appendChild(bubble);
   wrap.appendChild(time);
   chatWin.appendChild(wrap);
-  scrollDown();
+}
+
+function escapeHtml(text) {
+  return text
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;");
+}
+
+function renderTextMarkdown(text) {
+  let html = escapeHtml(text);
+
+  html = html.replace(/`([^`]+)`/g, "<code>$1</code>");
+  html = html.replace(/\*\*(.+?)\*\*/g, "<strong>$1</strong>");
+  html = html.replace(/\*(.+?)\*/g, "<em>$1</em>");
+
+  const lines = html.split(/\r?\n/);
+  let output = "";
+  let inList = false;
+  let inOrderedList = false;
+  let inParagraph = false;
+
+  function closeParagraph() {
+    if (inParagraph) {
+      output += "</p>";
+      inParagraph = false;
+    }
+  }
+
+  function closeLists() {
+    if (inList) {
+      output += "</ul>";
+      inList = false;
+    }
+    if (inOrderedList) {
+      output += "</ol>";
+      inOrderedList = false;
+    }
+  }
+
+  lines.forEach((line, index) => {
+    const trimmed = line.trim();
+    const headingMatch = trimmed.match(/^(#{1,6})\s+(.*)$/);
+    const bulletMatch = trimmed.match(/^[-*]\s+(.*)$/);
+    const orderedMatch = trimmed.match(/^\d+\.\s+(.*)$/);
+
+    if (headingMatch) {
+      closeParagraph();
+      closeLists();
+      const level = Math.min(6, headingMatch[1].length);
+      output += `<h${level}>${headingMatch[2]}</h${level}>`;
+    } else if (bulletMatch) {
+      closeParagraph();
+      if (inOrderedList) {
+        output += "</ol>";
+        inOrderedList = false;
+      }
+      if (!inList) {
+        inList = true;
+        output += "<ul>";
+      }
+      output += `<li>${bulletMatch[1]}</li>`;
+    } else if (orderedMatch) {
+      closeParagraph();
+      if (inList) {
+        output += "</ul>";
+        inList = false;
+      }
+      if (!inOrderedList) {
+        inOrderedList = true;
+        output += "<ol>";
+      }
+      output += `<li>${orderedMatch[1]}</li>`;
+    } else if (trimmed === "") {
+      closeParagraph();
+      closeLists();
+    } else {
+      if (!inParagraph) {
+        inParagraph = true;
+        output += "<p>";
+      } else {
+        output += " ";
+      }
+      output += trimmed;
+    }
+
+    if (index === lines.length - 1) {
+      closeParagraph();
+      closeLists();
+    }
+  });
+
+  return output;
 }
 
 // ════════════════════════════════════════════════════════════
@@ -198,7 +294,6 @@ function addCodeBlock(code, lang) {
   block.appendChild(header);
   block.appendChild(pre);
   chatWin.appendChild(block);
-  scrollDown();
 }
 
 // ════════════════════════════════════════════════════════════
@@ -213,7 +308,7 @@ function showTyping() {
                 <span class="dot"></span>
                 <span class="dot"></span>`;
   chatWin.appendChild(wrap);
-  requestAnimationFrame(() => scrollDown(true, 900));
+  wrap.scrollIntoView({ behavior: "smooth", block: "start" });
 }
 
 function hideTyping() {
@@ -222,40 +317,46 @@ function hideTyping() {
 }
 
 // ════════════════════════════════════════════════════════════
-// BUSCA NO BANCO DE CONHECIMENTO
+// EXIBIR RESPOSTA DE IA
 // ════════════════════════════════════════════════════════════
-function findAnswer(userText) {
-  const clean = userText.toLowerCase();
-  return brain.find((item) => item.keys.some((k) => clean.includes(k)));
+function renderAiResponse(response) {
+  response.parts.forEach((part) => {
+    if (part.type === "text") {
+      addMsg(renderTextMarkdown(part.content), "bot", { html: true });
+    } else if (part.type === "code") {
+      addCodeBlock(part.content, part.lang || "text");
+    }
+  });
 }
 
 // ════════════════════════════════════════════════════════════
 // ENVIAR MENSAGEM
 // ════════════════════════════════════════════════════════════
-function sendMessage() {
+async function sendMessage() {
   const text = input.value.trim();
   if (!text) return;
 
   addMsg(text, "user");
   input.value = "";
   showTyping();
+  sendBtn.disabled = true;
+  input.disabled = true;
 
-  // delay para simular "pensamento" do ByteForge
-  const delay = 600 + Math.random() * 500;
-  setTimeout(() => {
+  try {
+    const response = await getAIResponse(text);
+    renderAiResponse(response);
+  } catch (error) {
+    console.error("Erro ao gerar resposta de IA:", error);
+    addMsg(
+      "Desculpe, algo deu errado ao buscar a resposta. Tente novamente em alguns instantes.",
+      "bot",
+    );
+  } finally {
     hideTyping();
-
-    const match = findAnswer(text);
-    if (match) {
-      addMsg(match.text, "bot");
-      if (match.code) addCodeBlock(match.code, match.lang);
-    } else {
-      addMsg(
-        "Hmm, não encontrei uma resposta específica para isso.\n\nTente perguntar sobre: JavaScript, Python, Git, CSS, API, TypeScript, SQL, Node.js, React, Docker, Debug, Regex, POO, Arrays ou Carreira!",
-        "bot",
-      );
-    }
-  }, delay);
+    sendBtn.disabled = false;
+    input.disabled = false;
+    input.focus();
+  }
 }
 
 // ════════════════════════════════════════════════════════════
@@ -274,27 +375,8 @@ function clearChat() {
   init();
 }
 
-function scrollDown(smooth = false, duration = 900) {
-  if (!smooth) {
-    chatWin.scrollTop = chatWin.scrollHeight;
-    return;
-  }
-
-  const start = chatWin.scrollTop;
-  const end = chatWin.scrollHeight;
-  const distance = end - start;
-  if (distance <= 0) return;
-
-  const startTime = performance.now();
-  const ease = (t) => 1 - Math.pow(1 - t, 3);
-
-  function step(now) {
-    const elapsed = Math.min((now - startTime) / duration, 1);
-    chatWin.scrollTop = start + distance * ease(elapsed);
-    if (elapsed < 1) requestAnimationFrame(step);
-  }
-
-  requestAnimationFrame(step);
+function scrollDown(smooth = false) {
+  return;
 }
 
 // ════════════════════════════════════════════════════════════
@@ -330,27 +412,35 @@ const MAX_EYE_MOVE_Y = 2; // Movimento vertical (cima/baixo) limitado para não 
 
 // Pensamentos periódicos — tema forja
 const thoughts = [
-  "⚒️ Martelando esse bug até ele sumir...",
+  "⚒️ Martelando esse bug até ele virar função pura...",
   "🔥 Código bruto vira arte na forja certa",
-  "⚙️ Temperatura do servidor: CRÍTICA",
-  "🔩 Mais um parafuso apertado no deploy",
-  "⚒️ Bug na bigorna — vai sair na força!",
-  "🌋 Esse erro vai fundir como ferro em brasa",
-  "🔥 while (!funciona) { martela(); }",
-  "⚙️ Corrigi um bug, nasceram 3 igual hidra",
-  "🔩 Na minha máquina tá forjado perfeito 👍",
-  "⚒️ Deploy de sexta = jogar metal quente no frio",
-  "🔥 console.log('vai aqui?') → ainda não fundiu",
-  "⚙️ NullPointerException — o pior minério",
-  "🌋 Café acabou... a forja esfria ☕❌",
-  "⚒️ Se tá funcionando, NÃO ENCOSTA ⚠️",
-  "🔥 Bug intermitente = o fantasma da forja 👻",
-  "⚙️ Frontend e backend brigando feito ferreiro e fogo",
-  "⚒️ Funciona aqui, funde em produção 🎯",
-  "🔥 return 42; // a resposta universal",
-  "⚙️ Mais uma camada de abstração... e outra... e outra",
-  "⚒️ ctrl+c ctrl+v — a arte do reaproveitamento de metal",
-  "🌋 Stack Overflow: minha bigorna favorita 🤝",
+  "⚙️ Temperatura do servidor: crítica. A bigorna aguenta?",
+  "🔩 Deploy com estilo de Thor: só na marreta!",
+  "⚒️ Bug na bigorna — vou refinar isso em aço inox",
+  "🌋 Esse erro tá mais quente que overclock no inferno",
+  "🔥 while (!funciona) { martela(); if (fw) break; }",
+  "⚙️ Corrigi um bug, nascem 3 iguais à Hidra de Gorgon",
+  "🔩 Na minha máquina tá forjado perfeito. No mundo real? veremos.",
+  "⚒️ Deploy de sexta = jogar metal quente no frio. Só não chama o QA.",
+  "🔥 console.log('vai aqui?') → ainda não fundiu, mas tá quase",
+  "⚙️ NullPointerException é o minério mais traiçoeiro",
+  "🌋 Sem café, a forja pára. Com café, o código voa.",
+  "⚒️ Se tá funcionando, não mexe. Se não tá, martela mais.",
+  "🔥 Bug intermitente = o fantasma da forja. Só expulsar com testes.",
+  "⚙️ Frontend e backend discutindo igual ferro e fogo",
+  "⚒️ Aqui a gente funde ideias e transforma em código útil",
+  "🔥 return 42; // verdade universal e sarcasmo forjado",
+  "⚙️ Mais uma camada de abstração... e agora virou armadura.",
+  "⚒️ ctrl+c ctrl+v — arma de fogo do dev forjador",
+  "🌋 Stack Overflow: minha bigorna favorita. Cultura de forja total.",
+  "⚒️ Todo código vencedor já passou pela bigorna da refatoração.",
+  "🔥 Esse terminal tá mais pegando fogo que forja de dragão.",
+  "⚙️ Se o bug não se quebra, o código se adapta.",
+  "💻 Um commit por dia mantém o pânico afastado.",
+  "🧠 Essa branch tá mais perdida que variável global.",
+  "⌨️ Se deu erro, reajusta. Se não deu, documenta.",
+  "🐞 Bugs e café: a dieta padrão do dev forjador.",
+  "🛠️ Refatorar é forjar duas vezes para ficar melhor.",
 ];
 
 // Reações ao clique — tema forja
@@ -360,11 +450,20 @@ const reactions = [
   "⚙️ Clique registrado no sistema de bigorna!",
   "🌋 Que metal quer fundir hoje?",
   "⚒️ A forja nunca para — bora trabalhar!",
-  "🔥 Temperatura: máxima. Produtividade: alta.",
-  "⚙️ Me deixa marttelar esse bug em paz 😅",
-  "🔩 Para de me cutucar, tô temperando o código!",
-  "⚒️ Chamou? Tô forjando uma solução aqui!",
-  "🌋 Bug detectado — vai pra bigorna! 🤖",
+  "🔥 Temperatura máxima. Produtividade ao nível lendário.",
+  "⚙️ Deixa eu martelar esse bug com estilo geek 😎",
+  "🔩 A bigorna já tá aquecida. Lança o próximo pedido!",
+  "⚒️ Chamou? Tô forjando uma solução digna de um herói.",
+  "🌋 Bug detectado — vai direto pra forja de recompilação! 🤖",
+  "🔥 Código pronto pra ser temperado e lançado na produção.",
+  "⚙️ Se a lógica fosse espada, eu a afiaria até brilhar.",
+  "⚒️ Só um toque: bugs também entram na forja para se tornarem recursos.",
+  "💻 Programador feliz: teclado, café e código compilando.",
+  "🐛 Debug rápido? Só depois do terceiro café, né?",
+  "🔁 Sempre testando no 'minha máquina' e depois no mundo real.",
+  "🧠 Git é meu caderninho de versão; branch é mapa do tesouro.",
+  "⌨️ Se o código não funciona, acrescente mais café. Ou teste.",
+  "🧪 A melhor feature é a que buga menos na reunião de deploy.",
 ];
 
 let bubbleTimer;
