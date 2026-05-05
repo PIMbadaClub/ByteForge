@@ -7,6 +7,11 @@ const sendBtn = document.getElementById("send-btn");
 const clearBtn = document.getElementById("clear-btn");
 
 // ════════════════════════════════════════════════════════════
+// EFEITOS SONOROS
+// ════════════════════════════════════════════════════════════
+const anvilSound = new Audio("assets/anvil-use.mp3");
+
+// ════════════════════════════════════════════════════════════
 // RELÓGIO — atualiza a cada minuto
 // ════════════════════════════════════════════════════════════
 function updateClock() {
@@ -337,6 +342,12 @@ function renderAiResponse(response) {
 async function sendMessage() {
   const text = input.value.trim();
   if (!text) return;
+
+  // Reinicia e reproduz o som da bigorna
+  anvilSound.currentTime = 0;
+  anvilSound
+    .play()
+    .catch((err) => console.warn("Áudio bloqueado pelo navegador:", err));
 
   addMsg(text, "user");
   input.value = "";
