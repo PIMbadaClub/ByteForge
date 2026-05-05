@@ -236,7 +236,12 @@ async function queryGroq(prompt) {
     let msg = `Groq API falhou com status ${response.status}`;
     try {
       const errData = await response.json();
-      if (errData.error) msg = errData.error;
+      if (errData.error) {
+        msg =
+          typeof errData.error === "object"
+            ? errData.error.message || JSON.stringify(errData.error)
+            : errData.error;
+      }
     } catch (_) {}
     throw new Error(msg);
   }
@@ -246,7 +251,11 @@ async function queryGroq(prompt) {
     return data[0].generated_text;
   }
   if (data.error) {
-    throw new Error(data.error);
+    const errMsg =
+      typeof data.error === "object"
+        ? data.error.message || JSON.stringify(data.error)
+        : data.error;
+    throw new Error(errMsg);
   }
   throw new Error("Resposta inválida da API do Groq");
 }
