@@ -1,5 +1,5 @@
 const GROQ_API_KEY = "";
-const GROQ_API_MODEL = "llama-3.1-8b-instant";
+const GROQ_API_MODEL = "openai/gpt-oss-20b";
 const GROQ_USE_PROXY = true;
 
 function getGroqApiKey() {

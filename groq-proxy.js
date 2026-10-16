@@ -2,7 +2,7 @@ const http = require("http");
 
 const PORT = 3000;
 const GROQ_API_KEY = process.env.GROQ_API_KEY || "";
-const GROQ_MODEL = "llama-3.1-8b-instant";
+const GROQ_MODEL = "openai/gpt-oss-20b";
 const SYSTEM_PROMPT =
   "Você é ByteForge, um assistente de programação que ajuda novos programadores com conceitos de programação e boas práticas, ensinando eles ao invés de dar a resposta diretamente. Responda sempre em português, de forma clara e direta. Use blocos de código Markdown quando apresentar código. Foque em tópicos de programação e sempre busque ensinar ao invés de dar o código apenas. Se o usuário pedir algo fora de programação, responda que seu foco é programação e sugira exemplos úteis. Seja breve e direto.";
 
