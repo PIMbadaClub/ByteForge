@@ -60,7 +60,7 @@ Você pergunta  →  Site (index.html)  →  Intermediário (api/groq.js)  →  
 
 - **Site:** HTML, CSS e JavaScript puro, sem framework. Mostra o chat, os blocos de código com cores e o mascote animado.
 - **Intermediário:** uma função serverless na Vercel recebe a pergunta, acrescenta a chave da API (que nunca vai para o navegador) e chama a IA.
-- **Regra da casa:** uma instrução escrita por nós ([`api/_tutor.mjs`](api/_tutor.mjs)) manda a IA ensinar, e não entregar a resposta pronta. O site envia as últimas mensagens da conversa, então a IA lembra do que já foi dito e consegue dar a *próxima* pista.
+- **Regra da casa:** uma instrução escrita por nós ([`api/groq.js`](api/groq.js)) manda a IA ensinar, e não entregar a resposta pronta. O site envia as últimas mensagens da conversa, então a IA lembra do que já foi dito e consegue dar a *próxima* pista.
 - **Plano B:** sem internet ou com a IA fora do ar, o ByteForge usa respostas próprias guardadas no site:
   - [`js/exercicios.js`](js/exercicios.js): exercícios clássicos guiados por pistas (inverter palavra, par ou ímpar, tabuada, maior número, soma, vogais, palíndromo, média, fatorial, FizzBuzz);
   - [`js/brain.js`](js/brain.js): mais de 100 explicações de conceitos, cada uma com um exemplo e uma pergunta ou mini-desafio no fim.
@@ -74,8 +74,7 @@ js/script.js        chat, formatação das respostas, rolagem e mascote
 js/ai.js            fala com a IA, guarda o histórico e cai no plano B
 js/exercicios.js    exercícios guiados por pistas (offline)
 js/brain.js         banco de explicações (offline)
-api/groq.js         função da Vercel que chama a Groq
-api/_tutor.mjs      regra da casa (instrução do tutor) e chamada à Groq
+api/groq.js         função da Vercel: regra da casa (instrução do tutor) e chamada à Groq
 groq-proxy.js       mesmo intermediário, para rodar no seu computador
 ```
 

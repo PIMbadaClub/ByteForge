@@ -41,7 +41,7 @@ const server = http.createServer((req, res) => {
       }
 
       // Mesma "regra da casa" da Vercel
-      const { askGroq } = await import("./api/_tutor.mjs");
+      const { askGroq } = await import("./api/groq.js");
       const { text, truncated } = await askGroq(GROQ_API_KEY, JSON.parse(body));
 
       res.writeHead(200, {
