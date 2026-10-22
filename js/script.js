@@ -97,13 +97,29 @@ function renderTextMarkdown(text) {
 
   function closeTable() {
     if (!tableRows.length) return;
-    const cells = (row) => row.replace(/^\||\|$/g, "").split("|").map((c) => c.trim());
+    const cells = (row) =>
+      row
+        .replace(/^\||\|$/g, "")
+        .split("|")
+        .map((c) => c.trim());
     const [head, ...body] = tableRows;
-    output += '<div class="md-table"><table><thead><tr>'
-      + cells(head).map((c) => `<th>${c}</th>`).join("")
-      + "</tr></thead><tbody>"
-      + body.map((r) => "<tr>" + cells(r).map((c) => `<td>${c}</td>`).join("") + "</tr>").join("")
-      + "</tbody></table></div>";
+    output +=
+      '<div class="md-table"><table><thead><tr>' +
+      cells(head)
+        .map((c) => `<th>${c}</th>`)
+        .join("") +
+      "</tr></thead><tbody>" +
+      body
+        .map(
+          (r) =>
+            "<tr>" +
+            cells(r)
+              .map((c) => `<td>${c}</td>`)
+              .join("") +
+            "</tr>",
+        )
+        .join("") +
+      "</tbody></table></div>";
     tableRows = [];
   }
 
@@ -364,7 +380,9 @@ function renderAiResponse(response, { historyMode = false } = {}) {
   const followResponse = isNearBottom();
   hideTyping();
   if (!historyMode) {
-    chatWin.querySelectorAll(".trail textarea, .trail-actions").forEach((control) => control.remove());
+    chatWin
+      .querySelectorAll(".trail textarea, .trail-actions")
+      .forEach((control) => control.remove());
   }
   let firstPart;
 
@@ -398,8 +416,12 @@ function renderAiResponse(response, { historyMode = false } = {}) {
   if (response.source) {
     const badge = document.createElement("div");
     badge.className = "source-badge";
-    badge.textContent = response.source === "groq" ? "Resposta da IA"
-      : response.source === "local" ? "Forja local" : "Resposta indisponível";
+    badge.textContent =
+      response.source === "groq"
+        ? "Resposta da IA"
+        : response.source === "local"
+          ? "Forja local"
+          : "Resposta indisponível";
     chatWin.appendChild(badge);
     firstPart ||= badge;
   }
@@ -450,8 +472,13 @@ function renderAiResponse(response, { historyMode = false } = {}) {
 
 function offsetInChat(el) {
   const padding = parseFloat(getComputedStyle(chatWin).paddingTop);
-  return chatWin.scrollTop + el.getBoundingClientRect().top
-    - chatWin.getBoundingClientRect().top - chatWin.clientTop - padding;
+  return (
+    chatWin.scrollTop +
+    el.getBoundingClientRect().top -
+    chatWin.getBoundingClientRect().top -
+    chatWin.clientTop -
+    padding
+  );
 }
 
 // ════════════════════════════════════════════════════════════
@@ -468,22 +495,32 @@ let pendingAnswer = null;
 function showJumpButton() {
   const app = document.getElementById("app").getBoundingClientRect();
   const chat = chatWin.getBoundingClientRect();
-  jumpBtn.style.setProperty("--jump-bottom", `${app.bottom - chat.bottom + 12}px`);
+  jumpBtn.style.setProperty(
+    "--jump-bottom",
+    `${app.bottom - chat.bottom + 12}px`,
+  );
   jumpBtn.classList.add("show");
 }
 
 jumpBtn.onclick = () => {
-  scrollChatTo(pendingAnswer ? offsetInChat(pendingAnswer) : chatWin.scrollHeight, true);
+  scrollChatTo(
+    pendingAnswer ? offsetInChat(pendingAnswer) : chatWin.scrollHeight,
+    true,
+  );
   pendingAnswer = null;
   jumpBtn.classList.remove("show");
 };
 
-chatWin.addEventListener("scroll", () => {
-  if (jumpBtn.classList.contains("show") && isNearBottom()) {
-    pendingAnswer = null;
-    jumpBtn.classList.remove("show");
-  }
-}, { passive: true });
+chatWin.addEventListener(
+  "scroll",
+  () => {
+    if (jumpBtn.classList.contains("show") && isNearBottom()) {
+      pendingAnswer = null;
+      jumpBtn.classList.remove("show");
+    }
+  },
+  { passive: true },
+);
 
 // ════════════════════════════════════════════════════════════
 // ENVIAR MENSAGEM
@@ -519,10 +556,13 @@ async function sendMessage(override) {
   } catch (error) {
     console.error("Erro ao gerar resposta de IA:", error);
     const response = {
-      parts: [{
-        type: "text",
-        content: "Desculpe, algo deu errado ao buscar a resposta. Tente novamente em alguns instantes.",
-      }],
+      parts: [
+        {
+          type: "text",
+          content:
+            "Desculpe, algo deu errado ao buscar a resposta. Tente novamente em alguns instantes.",
+        },
+      ],
       source: "error",
     };
     renderAiResponse(response);
@@ -567,7 +607,9 @@ function isNearBottom() {
 }
 
 function scrollChatTo(top, smooth = false) {
-  const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  const reducedMotion = window.matchMedia(
+    "(prefers-reduced-motion: reduce)",
+  ).matches;
   chatWin.scrollTo({
     top,
     behavior: smooth && !reducedMotion ? "smooth" : "auto",
@@ -598,7 +640,11 @@ document.getElementById("resume-btn").onclick = () => {
   init();
   const turns = restoreSession(data);
   turns.forEach((turn, index) => {
-    if (typeof turn.userText !== "string" || !Array.isArray(turn.response?.parts)) return;
+    if (
+      typeof turn.userText !== "string" ||
+      !Array.isArray(turn.response?.parts)
+    )
+      return;
     addMsg(turn.userText, "user");
     renderAiResponse(turn.response, { historyMode: index < turns.length - 1 });
   });
@@ -720,51 +766,81 @@ const reactions = [
 
 // Piadinhas por assunto da pergunta
 const topicJokes = [
-  { keys: ["javascript", " js", "node", "react"], jokes: [
-    "🟨 JavaScript: onde [] + {} é '[object Object]' e tá tudo bem.",
-    "🟨 '1' + 1 = '11'. '1' - 1 = 0. JS é arte abstrata.",
-    "🟨 Usei var em 2026. A bigorna chorou.",
-  ] },
-  { keys: ["typescript", " ts"], jokes: [
-    "🔷 TypeScript: JavaScript que foi pra terapia.",
-    "🔷 any é o 'deixa quieto' do TypeScript.",
-  ] },
-  { keys: ["python", "django", "flask"], jokes: [
-    "🐍 Python: onde um espaço a mais derruba a forja inteira.",
-    "🐍 import antigravity — e o dev saiu voando.",
-    "🐍 Tab ou espaço? Aqui é martelo.",
-  ] },
-  { keys: ["git", "commit", "branch", "merge"], jokes: [
-    "🌿 git push --force: o martelo mais perigoso da forja.",
-    "🌿 Mensagem do commit: 'ajustes'. 47 arquivos alterados.",
-    "🌿 Git blame apontou pra mim. Que ofensa.",
-  ] },
-  { keys: ["css", "flex", "grid", "layout"], jokes: [
-    "🎨 Centralizar uma div: o desafio final de todo herói.",
-    "🎨 CSS é fácil, disse ninguém depois do z-index: 9999.",
-    "🎨 !important em tudo. A forja virou anarquia.",
-  ] },
-  { keys: ["sql", "banco", "database", "query"], jokes: [
-    "🗄️ DELETE sem WHERE: o grito mais rápido da TI.",
-    "🗄️ Um SELECT entra num bar e pergunta: posso dar JOIN em vocês?",
-    "🗄️ Backup? Eu achava que você tinha feito.",
-  ] },
-  { keys: ["docker", "container", "kubernetes"], jokes: [
-    "🐳 'Funciona na minha máquina.' — Então mandamos a sua máquina. Nasceu o Docker.",
-    "🐳 Container: a marmita do deploy.",
-  ] },
-  { keys: ["api", "rest", "http", "endpoint"], jokes: [
-    "🌐 HTTP 418: sou uma bigorna, não uma chaleira.",
-    "🌐 Status 200 com { erro: true } no corpo. Clássico.",
-  ] },
-  { keys: ["debug", "erro", "bug", "exception"], jokes: [
-    "🐞 Debug: ser o detetive num crime em que você é o culpado.",
-    "🐞 console.log('aqui'), console.log('aqui2'), console.log('AQUIIII')",
-  ] },
-  { keys: ["carreira", "emprego", "estágio", "estagio", "vaga"], jokes: [
-    "💼 Vaga júnior: 5 anos de experiência em framework de 2 anos.",
-    "💼 Dica de carreira: aprenda a ler erro antes de colar no Google.",
-  ] },
+  {
+    keys: ["javascript", " js", "node", "react"],
+    jokes: [
+      "🟨 JavaScript: onde [] + {} é '[object Object]' e tá tudo bem.",
+      "🟨 '1' + 1 = '11'. '1' - 1 = 0. JS é arte abstrata.",
+      "🟨 Usei var em 2026. A bigorna chorou.",
+    ],
+  },
+  {
+    keys: ["typescript", " ts"],
+    jokes: [
+      "🔷 TypeScript: JavaScript que foi pra terapia.",
+      "🔷 any é o 'deixa quieto' do TypeScript.",
+    ],
+  },
+  {
+    keys: ["python", "django", "flask"],
+    jokes: [
+      "🐍 Python: onde um espaço a mais derruba a forja inteira.",
+      "🐍 import antigravity — e o dev saiu voando.",
+      "🐍 Tab ou espaço? Aqui é martelo.",
+    ],
+  },
+  {
+    keys: ["git", "commit", "branch", "merge"],
+    jokes: [
+      "🌿 git push --force: o martelo mais perigoso da forja.",
+      "🌿 Mensagem do commit: 'ajustes'. 47 arquivos alterados.",
+      "🌿 Git blame apontou pra mim. Que ofensa.",
+    ],
+  },
+  {
+    keys: ["css", "flex", "grid", "layout"],
+    jokes: [
+      "🎨 Centralizar uma div: o desafio final de todo herói.",
+      "🎨 CSS é fácil, disse ninguém depois do z-index: 9999.",
+      "🎨 !important em tudo. A forja virou anarquia.",
+    ],
+  },
+  {
+    keys: ["sql", "banco", "database", "query"],
+    jokes: [
+      "🗄️ DELETE sem WHERE: o grito mais rápido da TI.",
+      "🗄️ Um SELECT entra num bar e pergunta: posso dar JOIN em vocês?",
+      "🗄️ Backup? Eu achava que você tinha feito.",
+    ],
+  },
+  {
+    keys: ["docker", "container", "kubernetes"],
+    jokes: [
+      "🐳 'Funciona na minha máquina.' — Então mandamos a sua máquina. Nasceu o Docker.",
+      "🐳 Container: a marmita do deploy.",
+    ],
+  },
+  {
+    keys: ["api", "rest", "http", "endpoint"],
+    jokes: [
+      "🌐 HTTP 418: sou uma bigorna, não uma chaleira.",
+      "🌐 Status 200 com { erro: true } no corpo. Clássico.",
+    ],
+  },
+  {
+    keys: ["debug", "erro", "bug", "exception"],
+    jokes: [
+      "🐞 Debug: ser o detetive num crime em que você é o culpado.",
+      "🐞 console.log('aqui'), console.log('aqui2'), console.log('AQUIIII')",
+    ],
+  },
+  {
+    keys: ["carreira", "emprego", "estágio", "estagio", "vaga"],
+    jokes: [
+      "💼 Vaga júnior: 5 anos de experiência em framework de 2 anos.",
+      "💼 Dica de carreira: aprenda a ler erro antes de colar no Google.",
+    ],
+  },
 ];
 
 let bubbleTimer;
@@ -778,8 +854,10 @@ function positionBubble() {
   const margin = 10;
   const leftEdge = (viewport?.offsetLeft || 0) + margin;
   const topEdge = (viewport?.offsetTop || 0) + margin;
-  const rightEdge = leftEdge + (viewport?.width || window.innerWidth) - margin * 2;
-  const bottomEdge = topEdge + (viewport?.height || window.innerHeight) - margin * 2;
+  const rightEdge =
+    leftEdge + (viewport?.width || window.innerWidth) - margin * 2;
+  const bottomEdge =
+    topEdge + (viewport?.height || window.innerHeight) - margin * 2;
   const mascoteCX = mascoteRect.left + mascoteRect.width / 2;
   const mascoteCY = mascoteRect.top + mascoteRect.height / 2;
   let width;
@@ -787,20 +865,31 @@ function positionBubble() {
 
   const appRect = document.getElementById("app").getBoundingClientRect();
   const sideLeft = mascoteRect.right + 6;
-  const sideWidth = Math.min(300, Math.min(rightEdge, appRect.right - margin) - sideLeft);
+  const sideWidth = Math.min(
+    300,
+    Math.min(rightEdge, appRect.right - margin) - sideLeft,
+  );
   const sideRight = mascoteRect.left - 6;
-  const leftWidth = Math.min(300, sideRight - Math.max(leftEdge, appRect.left + margin));
+  const leftWidth = Math.min(
+    300,
+    sideRight - Math.max(leftEdge, appRect.left + margin),
+  );
   const useLeft = leftWidth > sideWidth;
   if (Math.max(sideWidth, leftWidth) >= 110) {
     bubble.dataset.placement = useLeft ? "side-left" : "side";
     bubble.style.maxWidth = `${useLeft ? leftWidth : sideWidth}px`;
     width = bubble.offsetWidth;
     height = bubble.offsetHeight;
-    const top = Math.max(topEdge, Math.min(mascoteCY - height / 2, bottomEdge - height));
+    const top = Math.max(
+      topEdge,
+      Math.min(mascoteCY - height / 2, bottomEdge - height),
+    );
     bubble.style.left = `${useLeft ? sideRight - width : sideLeft}px`;
     bubble.style.top = `${top}px`;
-    bubble.style.setProperty("--pointer-top",
-      `${Math.max(14, Math.min(mascoteCY - top, height - 14))}px`);
+    bubble.style.setProperty(
+      "--pointer-top",
+      `${Math.max(14, Math.min(mascoteCY - top, height - 14))}px`,
+    );
     return;
   }
 
@@ -812,8 +901,10 @@ function positionBubble() {
   const left = Math.max(leftEdge, Math.min(mascoteCX - 24, rightEdge - width));
   bubble.style.left = `${left}px`;
   bubble.style.top = `${Math.min(mascoteRect.bottom + 10, bottomEdge - height)}px`;
-  bubble.style.setProperty("--pointer-left",
-    `${Math.max(16, Math.min(mascoteCX - left, width - 16))}px`);
+  bubble.style.setProperty(
+    "--pointer-left",
+    `${Math.max(16, Math.min(mascoteCX - left, width - 16))}px`,
+  );
 }
 
 // ════════════════════════════════════════════════════════════
@@ -887,7 +978,9 @@ const nextReaction = shuffleBag(reactions);
 // Piadinha sobre o assunto da pergunta (palavra-chave → lista)
 function reactToTopic(text) {
   const lower = " " + text.toLowerCase();
-  const topic = topicJokes.find(({ keys }) => keys.some((k) => lower.includes(k)));
+  const topic = topicJokes.find(({ keys }) =>
+    keys.some((k) => lower.includes(k)),
+  );
   if (!topic) return;
   setTimeout(() => {
     showBubble(topic.jokes[Math.floor(Math.random() * topic.jokes.length)]);
@@ -900,18 +993,24 @@ function syncViewport() {
   // A altura visível acompanha o teclado sem redimensionar o app durante o zoom.
   if (!viewport || viewport.scale === 1) {
     document.documentElement.classList.toggle(
-      "short-viewport", (viewport?.height || window.innerHeight) < 320,
+      "short-viewport",
+      (viewport?.height || window.innerHeight) < 320,
     );
     document.documentElement.style.setProperty(
-      "--viewport-height", `${viewport?.height || window.innerHeight}px`,
+      "--viewport-height",
+      `${viewport?.height || window.innerHeight}px`,
     );
     document.documentElement.style.setProperty(
-      "--viewport-top", `${viewport?.offsetTop || 0}px`,
+      "--viewport-top",
+      `${viewport?.offsetTop || 0}px`,
     );
     if (atBottom) scrollDown();
   }
   if (bubble.classList.contains("show")) positionBubble();
-  if (thorQueued && !document.documentElement.classList.contains("short-viewport")) {
+  if (
+    thorQueued &&
+    !document.documentElement.classList.contains("short-viewport")
+  ) {
     thorQueued = false;
     startThorMode();
   }
@@ -966,9 +1065,11 @@ const moodFaces = [
   { brows: [27, 32, 46, 39.5], mouth: "M 44 62 Q 50 55.5 56 62" },
 ];
 
-const moodLineBags = moodLines.map((lines) => (lines ? shuffleBag(lines) : null));
+const moodLineBags = moodLines.map((lines) =>
+  lines ? shuffleBag(lines) : null,
+);
 const nextCalmLine = shuffleBag(calmLines);
-const CLICKS_PER_LEVEL = 4; // a cada 4 cliques seguidos sobe um nível
+const CLICKS_PER_LEVEL = 2; // a cada 2 cliques seguidos sobe um nível
 let clickStreak = 0;
 let mood = 0;
 let lastClickAt = 0;
@@ -984,10 +1085,14 @@ function setMood(level) {
   const left = document.getElementById("brow-left");
   const right = document.getElementById("brow-right");
   // a sobrancelha direita é o espelho da esquerda (centro em x = 50)
-  left.setAttribute("x1", x1); left.setAttribute("y1", y1);
-  left.setAttribute("x2", x2); left.setAttribute("y2", y2);
-  right.setAttribute("x1", 100 - x1); right.setAttribute("y1", y1);
-  right.setAttribute("x2", 100 - x2); right.setAttribute("y2", y2);
+  left.setAttribute("x1", x1);
+  left.setAttribute("y1", y1);
+  left.setAttribute("x2", x2);
+  left.setAttribute("y2", y2);
+  right.setAttribute("x1", 100 - x1);
+  right.setAttribute("y1", y1);
+  right.setAttribute("x2", 100 - x2);
+  right.setAttribute("y2", y2);
   document.getElementById("bot-mouth").setAttribute("d", face.mouth);
 }
 
@@ -1007,8 +1112,8 @@ function scheduleCalmDown() {
 // ════════════════════════════════════════════════════════════
 // DESVIO — bravo, ele foge do mouse (no celular, pula a cada toque)
 // ════════════════════════════════════════════════════════════
-const DODGE_RADIUS = 80;   // px do centro do mascote até o mouse
-const DODGE_CHANCE = 0.7;  // às vezes ele vacila e dá pra pegar
+const DODGE_RADIUS = 80; // px do centro do mascote até o mouse
+const DODGE_CHANCE = 0.7; // às vezes ele vacila e dá pra pegar
 let dodgeX = 0;
 let dodgeY = 0;
 let lastDodgeAt = 0;
@@ -1017,7 +1122,12 @@ let lastDodgeAt = 0;
 // translate, então a medida não depende de onde ele está no meio do pulo.
 function dodgeLimits() {
   const header = document.getElementById("header");
-  const { offsetLeft: left, offsetTop: top, offsetWidth: w, offsetHeight: h } = mascoteWrap;
+  const {
+    offsetLeft: left,
+    offsetTop: top,
+    offsetWidth: w,
+    offsetHeight: h,
+  } = mascoteWrap;
   return {
     minX: 4 - left,
     maxX: header.clientWidth - 4 - w - left,
@@ -1030,7 +1140,8 @@ function moveMascot(x, y) {
   const lim = dodgeLimits();
   dodgeX = Math.round(Math.max(lim.minX, Math.min(lim.maxX, x)));
   dodgeY = Math.round(Math.max(lim.minY, Math.min(lim.maxY, y)));
-  mascoteWrap.style.translate = dodgeX || dodgeY ? `${dodgeX}px ${dodgeY}px` : "";
+  mascoteWrap.style.translate =
+    dodgeX || dodgeY ? `${dodgeX}px ${dodgeY}px` : "";
   followMascot();
   // garantia: reposiciona no fim do pulo mesmo se a aba estiver em segundo plano
   setTimeout(() => {
@@ -1075,7 +1186,10 @@ document.addEventListener("mousemove", (e) => {
   // foge na direção oposta ao mouse; encurralado na parede, pula pro outro lado
   const step = 110;
   const before = dodgeX;
-  moveMascot(dodgeX + (dx / (dist || 1)) * step, dodgeY + (dy / (dist || 1)) * 20);
+  moveMascot(
+    dodgeX + (dx / (dist || 1)) * step,
+    dodgeY + (dy / (dist || 1)) * 20,
+  );
   if (Math.abs(dodgeX - before) < 20) jumpToRandomSpot();
 });
 
@@ -1114,22 +1228,35 @@ function startThorMode() {
 
   // 1º raio: do céu direto no martelo erguido
   later(500, () => {
-    const head = mascoteWrap.querySelector(".hammer-head").getBoundingClientRect();
+    const head = mascoteWrap
+      .querySelector(".hammer-head")
+      .getBoundingClientRect();
     const hx = head.left + head.width / 2;
     const hy = head.top + head.height / 2;
-    strikeLightning([hx + (Math.random() - 0.5) * 80, -10], [hx, hy], { width: 1.2, branches: 5 });
+    strikeLightning([hx + (Math.random() - 0.5) * 80, -10], [hx, hy], {
+      width: 1.2,
+      branches: 5,
+    });
   });
 
   // depois, mais alguns pela tela
   if (!reduced) {
-    [1300, 1750, 2350].forEach((ms) => later(ms, () => {
-      const x = innerWidth * (0.1 + Math.random() * 0.8);
-      strikeLightning(
-        [x + (Math.random() - 0.5) * 160, -10],
-        [x + (Math.random() - 0.5) * 120, innerHeight * (0.55 + Math.random() * 0.4)],
-        { width: 0.9 + Math.random() * 0.5, branches: 3 + Math.floor(Math.random() * 3) },
-      );
-    }));
+    [1300, 1750, 2350].forEach((ms) =>
+      later(ms, () => {
+        const x = innerWidth * (0.1 + Math.random() * 0.8);
+        strikeLightning(
+          [x + (Math.random() - 0.5) * 160, -10],
+          [
+            x + (Math.random() - 0.5) * 120,
+            innerHeight * (0.55 + Math.random() * 0.4),
+          ],
+          {
+            width: 0.9 + Math.random() * 0.5,
+            branches: 3 + Math.floor(Math.random() * 3),
+          },
+        );
+      }),
+    );
   }
 
   thorTimer = setTimeout(endThorMode, 4200);
@@ -1138,8 +1265,10 @@ function startThorMode() {
 function maybeStartThorMode(text = "") {
   const asked = THOR_WORDS.test(text);
   if (crashed || thorQueued) return;
-  if (!asked && (Date.now() - lastThorAt < 90_000 || Math.random() >= 0.14)) return;
-  if (document.documentElement.classList.contains("short-viewport")) thorQueued = true;
+  if (!asked && (Date.now() - lastThorAt < 90_000 || Math.random() >= 0.14))
+    return;
+  if (document.documentElement.classList.contains("short-viewport"))
+    thorQueued = true;
   else startThorMode();
 }
 
@@ -1153,10 +1282,14 @@ function cloneMascot({ mouth, mouthFill = "none", brows = null }) {
     const [x1, y1, x2, y2] = brows;
     const left = svg.querySelector("#brow-left");
     const right = svg.querySelector("#brow-right");
-    left.setAttribute("x1", x1); left.setAttribute("y1", y1);
-    left.setAttribute("x2", x2); left.setAttribute("y2", y2);
-    right.setAttribute("x1", 100 - x1); right.setAttribute("y1", y1);
-    right.setAttribute("x2", 100 - x2); right.setAttribute("y2", y2);
+    left.setAttribute("x1", x1);
+    left.setAttribute("y1", y1);
+    left.setAttribute("x2", x2);
+    left.setAttribute("y2", y2);
+    right.setAttribute("x1", 100 - x1);
+    right.setAttribute("y1", y1);
+    right.setAttribute("x2", 100 - x2);
+    right.setAttribute("y2", y2);
   } else {
     svg.querySelector(".brows").remove();
   }
@@ -1174,7 +1307,11 @@ function setSiteDown(down) {
 }
 
 function isSiteDown() {
-  try { return localStorage.getItem(SITE_DOWN_KEY) === "1"; } catch { return false; }
+  try {
+    return localStorage.getItem(SITE_DOWN_KEY) === "1";
+  } catch {
+    return false;
+  }
 }
 
 // O site só volta se o aluno vencer a boss fight (js/boss.js)
@@ -1213,18 +1350,23 @@ function crashSite({ reloaded = false } = {}) {
     </div>`;
 
   // mascote gargalhando
-  overlay.querySelector(".f500-reveal").prepend(
-    cloneMascot({ mouth: "M 43 57 Q 50 67 57 57 Z", mouthFill: "#3a1f04" }),
-  );
+  overlay
+    .querySelector(".f500-reveal")
+    .prepend(
+      cloneMascot({ mouth: "M 43 57 Q 50 67 57 57 Z", mouthFill: "#3a1f04" }),
+    );
 
   document.body.appendChild(overlay);
   setMood(0);
   moveMascot(0, 0);
 
-  setTimeout(() => {
-    overlay.classList.add("reveal");
-    overlay.querySelector(".f500-btn").focus();
-  }, reloaded ? 1200 : 2800);
+  setTimeout(
+    () => {
+      overlay.classList.add("reveal");
+      overlay.querySelector(".f500-btn").focus();
+    },
+    reloaded ? 1200 : 2800,
+  );
 
   function restore() {
     overlay.remove();
@@ -1233,7 +1375,9 @@ function crashSite({ reloaded = false } = {}) {
     crashed = false;
     clickStreak = 0;
     moveMascot(0, 0);
-    showBubble("😵 Tá bom, tá bom, você venceu! Forja religada. Agora vamos estudar, combinado?");
+    showBubble(
+      "😵 Tá bom, tá bom, você venceu! Forja religada. Agora vamos estudar, combinado?",
+    );
   }
 
   overlay.querySelector(".f500-btn").onclick = () => startBossFight(restore);
@@ -1255,7 +1399,8 @@ mascoteWrap.addEventListener("click", () => {
   // clique até 2 s depois do anterior conta como "seguido"; mais devagar,
   // ele continua do nível de raiva em que está (não esquece na hora)
   const now = Date.now();
-  clickStreak = (now - lastClickAt < 2000 ? clickStreak : mood * CLICKS_PER_LEVEL) + 1;
+  clickStreak =
+    (now - lastClickAt < 2000 ? clickStreak : mood * CLICKS_PER_LEVEL) + 1;
   lastClickAt = now;
 
   if (crashed) return;
