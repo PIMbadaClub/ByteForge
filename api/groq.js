@@ -9,6 +9,43 @@
 // ════════════════════════════════════════════════════════════
 
 export const GROQ_MODEL = process.env.GROQ_MODEL || "openai/gpt-oss-20b";
+const MAX_BODY_BYTES = 64 * 1024;
+const RATE_WINDOW_MS = 60_000;
+const RATE_LIMIT = Math.max(1, Number(process.env.BYTEFORGE_RATE_LIMIT) || 20);
+const requestsByIp = new Map();
+
+function allowedOrigin(origin) {
+  if (!origin) return true; // clientes sem navegador ainda passam pelo limite de requisições
+  const configured = (process.env.BYTEFORGE_ALLOWED_ORIGINS || "https://byteforgechat.vercel.app")
+    .split(",").map((value) => value.trim()).filter(Boolean);
+  return configured.includes(origin) || /^http:\/\/(localhost|127\.0\.0\.1):\d+$/.test(origin);
+}
+
+function takeRequest(ip) {
+  const now = Date.now();
+  if (requestsByIp.size > 1000) {
+    for (const [key, value] of requestsByIp) {
+      if (value.resetAt <= now) requestsByIp.delete(key);
+    }
+  }
+  const current = requestsByIp.get(ip);
+  const bucket = current && current.resetAt > now
+    ? current : { count: 0, resetAt: now + RATE_WINDOW_MS };
+  bucket.count += 1;
+  requestsByIp.set(ip, bucket);
+  return { allowed: bucket.count <= RATE_LIMIT, retryAfter: Math.ceil((bucket.resetAt - now) / 1000) };
+}
+
+function logMetric(status, startedAt, usage = {}) {
+  console.info(JSON.stringify({
+    event: "byteforge_groq_request",
+    status,
+    duration_ms: Date.now() - startedAt,
+    model: GROQ_MODEL,
+    input_tokens: usage.prompt_tokens || 0,
+    output_tokens: usage.completion_tokens || 0,
+  }));
+}
 
 export const SYSTEM_PROMPT = `Você é o ByteForge, um tutor de programação para quem está começando. Seu mascote é um ferreiro que forja código: forjar é moldar aos poucos. A sua missão é fazer o aluno aprender a pensar, não pensar por ele. A IA é ferramenta, não substituição do raciocínio lógico.
 
@@ -66,6 +103,7 @@ export function buildMessages(body) {
 export async function askGroq(apiKey, body) {
   const groqRes = await fetch("https://api.groq.com/openai/v1/chat/completions", {
     method: "POST",
+    signal: AbortSignal.timeout(20_000),
     headers: {
       Authorization: `Bearer ${apiKey}`,
       "Content-Type": "application/json",
@@ -90,6 +128,7 @@ export async function askGroq(apiKey, body) {
   return {
     text: choice?.message?.content ?? "",
     truncated: choice?.finish_reason === "length",
+    usage: data.usage || {},
   };
 }
 
@@ -97,8 +136,16 @@ export async function askGroq(apiKey, body) {
 // ROTA /api/groq
 // ════════════════════════════════════════════════════════════
 export default async function handler(req, res) {
-  // Configuração de CORS para permitir as requisições
-  res.setHeader("Access-Control-Allow-Origin", "*");
+  const startedAt = Date.now();
+  const origin = req.headers.origin;
+  if (!allowedOrigin(origin)) {
+    logMetric(403, startedAt);
+    return res.status(403).json({ error: "Origem não permitida." });
+  }
+  if (origin) {
+    res.setHeader("Access-Control-Allow-Origin", origin);
+    res.setHeader("Vary", "Origin");
+  }
   res.setHeader("Access-Control-Allow-Methods", "POST, OPTIONS");
   res.setHeader("Access-Control-Allow-Headers", "Content-Type");
 
@@ -107,22 +154,42 @@ export default async function handler(req, res) {
   }
 
   if (req.method !== "POST") {
+    logMetric(405, startedAt);
     return res.status(405).json({ error: "Método não permitido." });
   }
 
   try {
+    const ip = String(req.headers["x-real-ip"] || req.headers["x-forwarded-for"] || req.socket?.remoteAddress || "unknown").split(",")[0].trim();
+    const limit = takeRequest(ip);
+    if (!limit.allowed) {
+      res.setHeader("Retry-After", String(limit.retryAfter));
+      logMetric(429, startedAt);
+      return res.status(429).json({ error: "Muitas perguntas em pouco tempo. Aguarde um minuto." });
+    }
+
+    const rawBody = typeof req.body === "string" ? req.body : JSON.stringify(req.body || {});
+    if (Buffer.byteLength(rawBody, "utf8") > MAX_BODY_BYTES) {
+      logMetric(413, startedAt);
+      return res.status(413).json({ error: "Pergunta muito longa." });
+    }
+    const body = typeof req.body === "string" ? JSON.parse(req.body) : req.body;
+    buildMessages(body); // valida antes de consumir a cota da Groq
+
     const GROQ_API_KEY = process.env.GROQ_API_KEY;
     if (!GROQ_API_KEY) {
       throw new Error("Chave GROQ_API_KEY não configurada no Vercel.");
     }
 
-    // No Vercel, o req.body já é parseado para objeto JSON automaticamente
-    const body = typeof req.body === "string" ? JSON.parse(req.body) : req.body;
-    const { text, truncated } = await askGroq(GROQ_API_KEY, body);
+    const { text, truncated, usage } = await askGroq(GROQ_API_KEY, body);
 
     // Devolve no formato que o ai.js espera: um array com 'generated_text'
+    logMetric(200, startedAt, usage);
     return res.status(200).json([{ generated_text: text, truncated }]);
   } catch (error) {
-    return res.status(400).json({ error: error.message });
+    const status = error.name === "TimeoutError" ? 504
+      : error instanceof SyntaxError || error.message === "Nenhuma pergunta recebida." ? 400 : 502;
+    console.error("Falha na API Groq:", error);
+    logMetric(status, startedAt);
+    return res.status(status).json({ error: status === 400 ? "Pergunta inválida." : "A IA está indisponível no momento." });
   }
 }

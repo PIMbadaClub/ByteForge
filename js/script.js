@@ -357,9 +357,12 @@ function hideTyping() {
 // ════════════════════════════════════════════════════════════
 // EXIBIR RESPOSTA DE IA
 // ════════════════════════════════════════════════════════════
-function renderAiResponse(response) {
+function renderAiResponse(response, { historyMode = false } = {}) {
   const followResponse = isNearBottom();
   hideTyping();
+  if (!historyMode) {
+    chatWin.querySelectorAll(".trail textarea, .trail-actions").forEach((control) => control.remove());
+  }
   let firstPart;
 
   // Textos seguidos viram um balão só (em vez de vários balõezinhos)
@@ -389,7 +392,48 @@ function renderAiResponse(response) {
     firstPart ||= element;
   });
 
+  if (response.source) {
+    const badge = document.createElement("div");
+    badge.className = "source-badge";
+    badge.textContent = response.source === "groq" ? "Resposta da IA"
+      : response.source === "local" ? "Forja local" : "Resposta indisponível";
+    chatWin.appendChild(badge);
+    firstPart ||= badge;
+  }
+
+  if (response.progress && !historyMode) {
+    const { step, total } = response.progress;
+    const trail = document.createElement("div");
+    trail.className = "trail";
+    const label = document.createElement("div");
+    label.className = "trail-progress";
+    label.textContent = `Pista ${step} de ${total}`;
+    const attempt = document.createElement("textarea");
+    attempt.rows = 2;
+    attempt.maxLength = 4000;
+    attempt.placeholder = "Escreva sua tentativa aqui...";
+    attempt.setAttribute("aria-label", "Sua tentativa para o exercício");
+    const actions = document.createElement("div");
+    actions.className = "trail-actions";
+    const tryBtn = document.createElement("button");
+    tryBtn.type = "button";
+    tryBtn.textContent = "Testar tentativa";
+    tryBtn.onclick = () => {
+      if (attempt.value.trim()) sendMessage(attempt.value);
+      else attempt.focus();
+    };
+    const nextBtn = document.createElement("button");
+    nextBtn.type = "button";
+    nextBtn.textContent = "Próxima pista";
+    nextBtn.disabled = step >= total;
+    nextBtn.onclick = () => sendMessage("Próxima pista");
+    actions.append(tryBtn, nextBtn);
+    trail.append(label, attempt, actions);
+    chatWin.appendChild(trail);
+  }
+
   if (!firstPart) return;
+  if (historyMode) return;
   // Mostra a pergunta e o início da resposta sem interromper a leitura do histórico.
   if (followResponse) {
     const question = firstPart.previousElementSibling;
@@ -441,9 +485,14 @@ chatWin.addEventListener("scroll", () => {
 // ════════════════════════════════════════════════════════════
 // ENVIAR MENSAGEM
 // ════════════════════════════════════════════════════════════
-async function sendMessage() {
-  const text = input.value.trim();
+async function sendMessage(override) {
+  const text = (typeof override === "string" ? override : input.value).trim();
   if (!text || sendBtn.disabled) return;
+
+  if (!resumeBanner.hidden) {
+    clearSavedSession();
+    resumeBanner.hidden = true;
+  }
 
   // Reinicia e reproduz o som da bigorna
   anvilSound.currentTime = 0;
@@ -461,15 +510,19 @@ async function sendMessage() {
   try {
     const response = await getAIResponse(text);
     renderAiResponse(response);
+    persistTurn(text, response);
     reactToTopic(text);
   } catch (error) {
     console.error("Erro ao gerar resposta de IA:", error);
-    renderAiResponse({
+    const response = {
       parts: [{
         type: "text",
         content: "Desculpe, algo deu errado ao buscar a resposta. Tente novamente em alguns instantes.",
       }],
-    });
+      source: "error",
+    };
+    renderAiResponse(response);
+    persistTurn(text, response);
   } finally {
     hideTyping();
     sendBtn.disabled = false;
@@ -498,6 +551,8 @@ function quickAsk(topic) {
 function clearChat() {
   chatWin.innerHTML = "";
   resetConversation();
+  clearSavedSession();
+  resumeBanner.hidden = true;
   pendingAnswer = null;
   jumpBtn.classList.remove("show");
   init();
@@ -530,7 +585,23 @@ function init() {
 }
 
 // Eventos
-sendBtn.onclick = sendMessage;
+const resumeBanner = document.getElementById("resume-banner");
+document.getElementById("resume-btn").onclick = () => {
+  const data = readSavedSession();
+  resumeBanner.hidden = true;
+  if (!data) return;
+  chatWin.innerHTML = "";
+  init();
+  const turns = restoreSession(data);
+  turns.forEach((turn, index) => {
+    if (typeof turn.userText !== "string" || !Array.isArray(turn.response?.parts)) return;
+    addMsg(turn.userText, "user");
+    renderAiResponse(turn.response, { historyMode: index < turns.length - 1 });
+  });
+  scrollDown();
+};
+document.getElementById("new-chat-btn").onclick = clearChat;
+sendBtn.onclick = () => sendMessage();
 clearBtn.onclick = clearChat;
 input.addEventListener("keypress", (e) => {
   if (e.key === "Enter") sendMessage();
@@ -538,6 +609,7 @@ input.addEventListener("keypress", (e) => {
 
 // Inicia
 init();
+resumeBanner.hidden = !readSavedSession();
 
 // ════════════════════════════════════════════════════════════
 // MASCOTE INTERATIVO
@@ -812,7 +884,85 @@ window.visualViewport?.addEventListener("scroll", () => {
 });
 syncViewport();
 
-// Clique no mascote → pula + reação
+// ════════════════════════════════════════════════════════════
+// HUMOR — clicar muitas vezes seguidas deixa o mascote bravo
+// 0 normal · 1 irritado · 2 bravo · 3 furioso
+// ════════════════════════════════════════════════════════════
+const moodLines = [
+  null, // nível 0 usa as reações normais
+  [
+    "😑 Tá, já entendi que eu sou clicável.",
+    "🤨 Isso é um teste de estresse? Porque tá funcionando.",
+    "😒 Você clica assim no botão de deploy também?",
+    "🙄 Tô tentando forjar aqui, sabia?",
+  ],
+  [
+    "😠 Para de me cutucar! Eu tô segurando um MARTELO.",
+    "😤 Mais um clique e eu te dou um git blame em público.",
+    "💢 Eu não sou botão de elevador pra apertar várias vezes!",
+    "😠 Vou abrir uma issue contra você: 'usuário clicando demais'.",
+  ],
+  [
+    "🤬 CHEGA! Vou fazer deploy na SEXTA-FEIRA ÀS 18H!",
+    "🔥 FURIOSO! Vou apagar o seu node_modules... ah, não, isso seria um favor.",
+    "🤬 MAIS UM CLIQUE E EU DOU DROP TABLE NA SUA PACIÊNCIA!",
+    "🌋 TÔ MAIS QUENTE QUE A FORJA! SAI DAQUI!",
+    "🤬 Clicou de novo?! Agora seu código vai ter ponto e vírgula faltando ALEATORIAMENTE!",
+  ],
+];
+
+const calmLines = [
+  "😮‍💨 Tá... passou. Amigos de novo?",
+  "😌 Respirei fundo. Desculpa o surto, foi a temperatura da forja.",
+  "🫠 Ok, voltei ao normal. Mas fica de olho, hein.",
+];
+
+// Sobrancelhas e boca de cada nível (coordenadas do SVG)
+const moodFaces = [
+  { brows: [28, 35, 46, 35], mouth: "M 45 59 Q 50 63 55 59" },
+  { brows: [28, 35, 46, 36.5], mouth: "M 45 60 L 55 60" },
+  { brows: [28, 33, 46, 38], mouth: "M 45 61 Q 50 57.5 55 61" },
+  { brows: [27, 32, 46, 39.5], mouth: "M 44 62 Q 50 55.5 56 62" },
+];
+
+const moodLineBags = moodLines.map((lines) => (lines ? shuffleBag(lines) : null));
+const nextCalmLine = shuffleBag(calmLines);
+const CLICKS_PER_LEVEL = 4; // a cada 4 cliques seguidos sobe um nível
+let clickStreak = 0;
+let mood = 0;
+let lastClickAt = 0;
+let calmTimer;
+
+function setMood(level) {
+  mood = level;
+  if (level) mascoteWrap.dataset.mood = level;
+  else delete mascoteWrap.dataset.mood;
+
+  const face = moodFaces[level];
+  const [x1, y1, x2, y2] = face.brows;
+  const left = document.getElementById("brow-left");
+  const right = document.getElementById("brow-right");
+  // a sobrancelha direita é o espelho da esquerda (centro em x = 50)
+  left.setAttribute("x1", x1); left.setAttribute("y1", y1);
+  left.setAttribute("x2", x2); left.setAttribute("y2", y2);
+  right.setAttribute("x1", 100 - x1); right.setAttribute("y1", y1);
+  right.setAttribute("x2", 100 - x2); right.setAttribute("y2", y2);
+  document.getElementById("bot-mouth").setAttribute("d", face.mouth);
+}
+
+// Sem cliques, ele se acalma um nível a cada 2,5 s
+function scheduleCalmDown() {
+  clearTimeout(calmTimer);
+  calmTimer = setTimeout(function calmStep() {
+    if (!mood) return;
+    setMood(mood - 1);
+    clickStreak = mood * CLICKS_PER_LEVEL;
+    if (!mood) showBubble(nextCalmLine());
+    else calmTimer = setTimeout(calmStep, 2500);
+  }, 3000);
+}
+
+// Clique no mascote → pula + reação (ou bronca, se clicar demais)
 mascoteWrap.addEventListener("click", () => {
   mascoteWrap.classList.remove("bouncing");
   void mascoteWrap.offsetWidth; // reflow para reiniciar animação
@@ -825,7 +975,16 @@ mascoteWrap.addEventListener("click", () => {
     { once: true },
   );
 
-  showBubble(nextReaction());
+  // clique até 2 s depois do anterior conta como "seguido"; mais devagar,
+  // ele continua do nível de raiva em que está (não esquece na hora)
+  const now = Date.now();
+  clickStreak = (now - lastClickAt < 2000 ? clickStreak : mood * CLICKS_PER_LEVEL) + 1;
+  lastClickAt = now;
+
+  const level = Math.min(3, Math.floor((clickStreak - 1) / CLICKS_PER_LEVEL));
+  if (level !== mood) setMood(level);
+  showBubble(level ? moodLineBags[level]() : nextReaction());
+  scheduleCalmDown();
 });
 
 // Pensamentos automáticos (12 – 22 s)

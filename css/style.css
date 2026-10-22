@@ -23,6 +23,18 @@
     padding: 0;
 }
 
+.sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
+}
+
 body {
     background:
         radial-gradient(ellipse at 30% 80%, rgba(255,94,26,.18)  0%, transparent 50%),
@@ -251,6 +263,40 @@ body {
     box-shadow: 0 0 8px rgba(255,94,26,.3);
 }
 
+#resume-banner {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 16px;
+    background: #261c10;
+    color: var(--text);
+    font-size: 12px;
+    border-bottom: 1px solid var(--border);
+}
+
+#resume-banner[hidden] { display: none; }
+#resume-banner span { flex: 1 1 100%; }
+#resume-banner button,
+.trail button {
+    background: #302214;
+    color: var(--text);
+    border: 1px solid var(--gold);
+    border-radius: 8px;
+    padding: 7px 10px;
+    cursor: pointer;
+    font: inherit;
+}
+
+#resume-banner button:focus-visible,
+.trail button:focus-visible,
+.atalho:focus-visible,
+#clear-btn:focus-visible,
+#send-btn:focus-visible {
+    outline: 2px solid var(--hot);
+    outline-offset: 2px;
+}
+
 /* ── CHAT WINDOW ──────────────────────────────────────────── */
 #chat-window {
     flex: 1;
@@ -435,6 +481,42 @@ body {
     margin-top: -4px;
 }
 
+.source-badge {
+    align-self: flex-start;
+    color: var(--gold);
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    padding: 3px 9px;
+    font-size: 11px;
+}
+
+.trail {
+    align-self: stretch;
+    display: grid;
+    gap: 8px;
+    padding: 12px;
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    background: #1b140c;
+}
+
+.trail-progress { color: var(--gold); font-weight: 700; font-size: 13px; }
+.trail textarea {
+    width: 100%;
+    min-height: 64px;
+    resize: vertical;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 8px;
+    background: var(--surface);
+    color: var(--text);
+    font-family: inherit;
+    font-size: 16px;
+    line-height: 1.4;
+}
+.trail-actions { display: flex; flex-wrap: wrap; gap: 8px; }
+.trail button:disabled { opacity: .55; cursor: default; }
+
 /* ── CODE BLOCKS ──────────────────────────────────────────── */
 .code-block {
     box-sizing: border-box;
@@ -523,6 +605,7 @@ body {
     border-radius: 20px;
     cursor: pointer;
     font-size: 12px;
+    font-family: inherit;
     transition: all .2s;
 }
 
@@ -674,6 +757,76 @@ body {
 }
 
 .bouncing { animation: bounce-bot .45s ease; }
+
+/* ── HUMOR DO MASCOTE (cliques demais deixam ele bravo) ───── */
+.brows,
+.anger-mark,
+.steam,
+.anger-tint {
+    opacity: 0;
+    transition: opacity .3s;
+}
+
+#mascote-wrap .brows line {
+    transition: all .25s;
+}
+
+#mascote-wrap[data-mood="1"] .brows,
+#mascote-wrap[data-mood="2"] .brows,
+#mascote-wrap[data-mood="3"] .brows { opacity: 1; }
+
+#mascote-wrap[data-mood="2"] .anger-mark,
+#mascote-wrap[data-mood="3"] .anger-mark {
+    opacity: 1;
+    transform-box: fill-box;
+    transform-origin: center;
+    animation: anger-pulse .6s ease-in-out infinite;
+}
+
+#mascote-wrap[data-mood="2"] .anger-tint { opacity: .14; }
+#mascote-wrap[data-mood="3"] .anger-tint { opacity: .3; }
+
+#mascote-wrap[data-mood="3"] .steam { opacity: 1; }
+
+.puff {
+    transform-box: fill-box;
+    transform-origin: center;
+    animation: steam-rise 1.1s ease-out infinite;
+}
+.puff.p2 { animation-delay: .35s; }
+.puff.p3 { animation-delay: .7s; }
+
+@keyframes anger-pulse {
+    0%, 100% { transform: scale(1); }
+    50%      { transform: scale(1.25); }
+}
+
+@keyframes steam-rise {
+    0%   { transform: translateY(4px) scale(.5); opacity: .9; }
+    100% { transform: translateY(-10px) scale(1.6); opacity: 0; }
+}
+
+/* tremendo de raiva */
+@keyframes angry-shake {
+    0%, 100% { transform: translateX(0) rotate(0); }
+    25%      { transform: translateX(-2px) rotate(-2deg); }
+    75%      { transform: translateX(2px) rotate(2deg); }
+}
+
+#mascote-wrap[data-mood="2"] svg { animation: angry-shake .35s ease-in-out 2; }
+#mascote-wrap[data-mood="3"] svg {
+    animation: angry-shake .18s ease-in-out infinite;
+    filter: drop-shadow(0 0 10px rgba(255,40,0,.7));
+}
+
+/* martela com raiva */
+#mascote-wrap[data-mood="3"] #hammer-arm { animation-duration: .9s; }
+
+@media (prefers-reduced-motion: reduce) {
+    #mascote-wrap[data-mood] svg,
+    .puff,
+    .anger-mark { animation: none !important; }
+}
 
 /* ── THOUGHT BUBBLE ───────────────────────────────────────── */
 #thought-bubble {

@@ -65,6 +65,8 @@ Você pergunta  →  Site (index.html)  →  Intermediário (api/groq.js)  →  
   - [`js/exercicios.js`](js/exercicios.js): exercícios clássicos guiados por pistas (inverter palavra, par ou ímpar, tabuada, maior número, soma, vogais, palíndromo, média, fatorial, FizzBuzz);
   - [`js/brain.js`](js/brain.js): mais de 100 explicações de conceitos, cada uma com um exemplo e uma pergunta ou mini-desafio no fim.
 
+Cada resposta identifica se veio da IA ou da forja local. Os exercícios do catálogo mostram a etapa atual, um botão para pedir a próxima pista e um campo para testar uma tentativa. A conversa fica salva neste navegador; ao voltar, escolha **Continuar** para retomá-la ou **Começar outra** para apagá-la. O botão **Limpar** também apaga a sessão salva.
+
 ### Estrutura
 
 ```
@@ -101,6 +103,8 @@ Sem o passo 2, o site funciona só com o plano B (respostas locais).
 ### Publicar na Vercel
 
 Importe o repositório na Vercel e cadastre a variável de ambiente `GROQ_API_KEY` (e, se quiser, `GROQ_MODEL`). A pasta `api/` vira a função serverless automaticamente.
+
+A rota aceita por padrão a origem `https://byteforgechat.vercel.app` e endereços locais de desenvolvimento. Para usar outro domínio, defina `BYTEFORGE_ALLOWED_ORIGINS` com uma lista de origens separadas por vírgula. `BYTEFORGE_RATE_LIMIT` altera o limite padrão de 20 perguntas por minuto por IP. O limite de frequência é mantido em memória por instância da função; para um limite global entre instâncias, configure também uma regra no firewall da hospedagem. A rota rejeita corpos acima de 64 KiB, interrompe chamadas à IA após 20 segundos e registra status, duração, modelo e tokens nos logs, sem guardar perguntas ou respostas.
 
 ---
 

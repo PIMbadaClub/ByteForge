@@ -55,6 +55,8 @@
             <rect x="25" y="33" width="50" height="31" rx="14" fill="#0f1115"/>
             <!-- sombra do capacete na viseira -->
             <rect x="25" y="33" width="50" height="7" rx="6" fill="rgba(140,104,50,.3)"/>
+            <!-- viseira avermelhada quando está bravo -->
+            <rect class="anger-tint" x="25" y="33" width="50" height="31" rx="14" fill="#ff2a00"/>
 
             <!-- ── CAPACETE VIKING ── -->
             <path d="M 28 24 Q 13 22 12 6 Q 19 15 31 16 Z" fill="#d4c9b8" stroke="#7a7063" stroke-width="1.5" stroke-linejoin="round"/>
@@ -83,6 +85,18 @@
 
             <!-- ── SORRISO ── -->
             <path id="bot-mouth" d="M 45 59 Q 50 63 55 59" fill="none" stroke="#ff8c42" stroke-width="2.4" stroke-linecap="round"/>
+
+            <!-- ── HUMOR: sobrancelhas, 💢 e fumaça (aparecem com muitos cliques) ── -->
+            <g class="brows" stroke="#ff8c42" stroke-width="2.6" stroke-linecap="round">
+                <line id="brow-left" x1="28" y1="37" x2="46" y2="37"/>
+                <line id="brow-right" x1="72" y1="37" x2="54" y2="37"/>
+            </g>
+            <text class="anger-mark" x="80" y="40" font-size="13">💢</text>
+            <g class="steam" fill="#c9c2b8">
+                <circle class="puff p1" cx="14" cy="20" r="3.5"/>
+                <circle class="puff p2" cx="86" cy="20" r="3.5"/>
+                <circle class="puff p3" cx="50" cy="8" r="3"/>
+            </g>
 
             <!-- ── BIGORNA ── -->
             <rect x="24" y="84.5" width="58" height="5.5" rx="2" fill="#343740"/>
@@ -128,7 +142,7 @@
             <h1>ByteForge</h1>
             <div class="status">
                 <span class="status-dot"></span>
-                <span>Forjando código &middot; Online</span>
+                <span>Tutor de programação</span>
             </div>
         </div>
 
@@ -136,25 +150,31 @@
         <button id="clear-btn" title="Limpar conversa">&#x232B; Limpar</button>
     </div>
 
+    <div id="resume-banner" hidden>
+        <span>Você tem uma conversa salva neste navegador.</span>
+        <button id="resume-btn" type="button">Continuar</button>
+        <button id="new-chat-btn" type="button">Começar outra</button>
+    </div>
+
     <!-- ══════════════════════════════════════
          JANELA DE CHAT
          ══════════════════════════════════════ -->
-    <div id="chat-window"></div>
+    <div id="chat-window" role="log" aria-label="Conversa" aria-live="polite" aria-relevant="additions"></div>
 
     <!-- ══════════════════════════════════════
          ATALHOS — tópicos rápidos
          ══════════════════════════════════════ -->
     <div id="atalhos">
-        <span class="atalho" onclick="quickAsk('javascript')">JS</span>
-        <span class="atalho" onclick="quickAsk('python')">Python</span>
-        <span class="atalho" onclick="quickAsk('git')">Git</span>
-        <span class="atalho" onclick="quickAsk('css')">CSS</span>
-        <span class="atalho" onclick="quickAsk('api rest')">API/REST</span>
-        <span class="atalho" onclick="quickAsk('debug')">Debug</span>
-        <span class="atalho" onclick="quickAsk('sql')">SQL</span>
-        <span class="atalho" onclick="quickAsk('typescript')">TypeScript</span>
-        <span class="atalho" onclick="quickAsk('docker')">Docker</span>
-        <span class="atalho" onclick="quickAsk('carreira dev')">Carreira</span>
+        <button class="atalho" type="button" onclick="quickAsk('javascript')">JS</button>
+        <button class="atalho" type="button" onclick="quickAsk('python')">Python</button>
+        <button class="atalho" type="button" onclick="quickAsk('git')">Git</button>
+        <button class="atalho" type="button" onclick="quickAsk('css')">CSS</button>
+        <button class="atalho" type="button" onclick="quickAsk('api rest')">API/REST</button>
+        <button class="atalho" type="button" onclick="quickAsk('debug')">Debug</button>
+        <button class="atalho" type="button" onclick="quickAsk('sql')">SQL</button>
+        <button class="atalho" type="button" onclick="quickAsk('typescript')">TypeScript</button>
+        <button class="atalho" type="button" onclick="quickAsk('docker')">Docker</button>
+        <button class="atalho" type="button" onclick="quickAsk('carreira dev')">Carreira</button>
     </div>
 
     <!-- balão de pensamento do mascote (position: fixed via JS) -->
@@ -164,10 +184,11 @@
          INPUT
          ══════════════════════════════════════ -->
     <div id="input-area">
+        <label class="sr-only" for="user-input">Sua pergunta ou tentativa de código</label>
         <input id="user-input" type="text"
                placeholder="Descreva seu problema ou escolha um atalho..."
                autocomplete="off">
-        <button id="send-btn" title="Enviar (Enter)">
+        <button id="send-btn" type="button" title="Enviar (Enter)" aria-label="Enviar mensagem">
             <!-- ícone de avião de papel (send) -->
             <svg viewBox="0 0 24 24" width="16" height="16" fill="none"
                  stroke="currentColor" stroke-width="2.5"

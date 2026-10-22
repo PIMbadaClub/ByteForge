@@ -378,10 +378,27 @@ function localAnswer(userText, note) {
 
   if (note) parts.push({ type: "note", content: note });
   rememberTurn(userText, parts);
-  return { parts, source: "local" };
+  return { parts, source: "local", progress: getExerciseProgress() };
+}
+
+function getExerciseProgress() {
+  if (!currentExercise) return null;
+  return {
+    step: currentExercise.step + 1,
+    total: currentExercise.ex.pistas.length,
+  };
 }
 
 async function getAIResponse(userText) {
+  // Mudou de assunto no meio do exercício: sai da trilha e deixa a IA responder
+  if (currentExercise && !findBest(LOCAL_EXERCISES, userText)
+      && getLocalAnswer(userText) && !STUCK_WORDS.test(userText)) {
+    currentExercise = null;
+  }
+  // Exercícios do catálogo usam sempre a mesma trilha, inclusive se a IA voltar.
+  if (currentExercise || findBest(LOCAL_EXERCISES, userText)) {
+    return localAnswer(userText);
+  }
   const useBrowserAi = GROQ_USE_PROXY || (hasGroqApiKey() && !isFileProtocol());
 
   if (!useBrowserAi) {
@@ -411,6 +428,54 @@ async function getAIResponse(userText) {
       : "A IA não respondeu agora: usei a forja local.";
     return localAnswer(userText, note);
   }
+}
+
+const SESSION_KEY = "byteforge-session-v1";
+let savedTurns = [];
+
+function readSavedSession() {
+  try {
+    const data = JSON.parse(localStorage.getItem(SESSION_KEY) || "null");
+    return data?.version === 1 && Array.isArray(data.turns) ? data : null;
+  } catch {
+    return null;
+  }
+}
+
+function persistTurn(userText, response) {
+  savedTurns.push({ userText, response });
+  savedTurns = savedTurns.slice(-30);
+  try {
+    localStorage.setItem(SESSION_KEY, JSON.stringify({
+      version: 1,
+      turns: savedTurns,
+      history: chatHistory,
+      exercise: currentExercise && {
+        index: LOCAL_EXERCISES.indexOf(currentExercise.ex),
+        step: currentExercise.step,
+      },
+    }));
+  } catch (error) {
+    console.warn("Não foi possível salvar a conversa neste navegador:", error);
+  }
+}
+
+function restoreSession(data) {
+  savedTurns = data.turns.slice(-30);
+  chatHistory.length = 0;
+  chatHistory.push(...(Array.isArray(data.history) ? data.history.slice(-12) : []));
+  const index = data.exercise?.index;
+  const ex = Number.isInteger(index) ? LOCAL_EXERCISES[index] : null;
+  currentExercise = ex ? {
+    ex,
+    step: Math.max(0, Math.min(Number(data.exercise.step) || 0, ex.pistas.length - 1)),
+  } : null;
+  return savedTurns;
+}
+
+function clearSavedSession() {
+  savedTurns = [];
+  try { localStorage.removeItem(SESSION_KEY); } catch {}
 }
 
 window.setGroqApiKey = setGroqApiKey;
