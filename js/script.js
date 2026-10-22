@@ -10,6 +10,9 @@ const clearBtn = document.getElementById("clear-btn");
 // EFEITOS SONOROS
 // ════════════════════════════════════════════════════════════
 const anvilSound = new Audio("assets/anvil-use.mp3");
+let thorQueued = false;
+let lastThorAt = 0;
+let thorTimer;
 
 // ════════════════════════════════════════════════════════════
 // RELÓGIO — atualiza a cada minuto
@@ -506,6 +509,7 @@ async function sendMessage(override) {
   sendBtn.disabled = true;
   input.disabled = true;
   scrollDown();
+  maybeStartThorMode(text);
 
   try {
     const response = await getAIResponse(text);
@@ -765,10 +769,10 @@ const topicJokes = [
 
 let bubbleTimer;
 
-// Escolhe onde o balão cabe inteiro: acima do título (desktop), ao lado do
-// mascote (celular, cobrindo o título por alguns segundos) ou abaixo dele.
+// O balão fica sempre AO LADO do mascote (nunca por cima dele), com a seta
+// apontando para ele: do lado que tiver mais espaço. Só vai para baixo se
+// não couber de lado nenhum.
 function positionBubble() {
-  const titleRect = document.querySelector(".header-info h1").getBoundingClientRect();
   const mascoteRect = mascoteWrap.getBoundingClientRect();
   const viewport = window.visualViewport;
   const margin = 10;
@@ -778,32 +782,16 @@ function positionBubble() {
   const bottomEdge = topEdge + (viewport?.height || window.innerHeight) - margin * 2;
   const mascoteCX = mascoteRect.left + mascoteRect.width / 2;
   const mascoteCY = mascoteRect.top + mascoteRect.height / 2;
+  let width;
+  let height;
 
-  // 1) Acima do título (se o mascote saiu do lugar fugindo, acima dele)
-  bubble.dataset.placement = "above";
-  bubble.style.maxWidth = `${Math.min(240, rightEdge - leftEdge)}px`;
-  let width = bubble.offsetWidth;
-  let height = bubble.offsetHeight;
-  const above = titleRect.top - height - 10;
-  if (above >= topEdge) {
-    const anchorX = dodgeX ? mascoteCX : titleRect.left + titleRect.width / 2;
-    const left = Math.max(leftEdge, Math.min(anchorX - width / 2, rightEdge - width));
-    bubble.style.left = `${left}px`;
-    bubble.style.top = `${above}px`;
-    bubble.style.setProperty("--pointer-left",
-      `${Math.max(16, Math.min(mascoteCX - left, width - 16))}px`);
-    return;
-  }
-
-  // 2) Ao lado do mascote, com a seta apontando para ele: à direita e, se ele
-  //    fugiu para a direita e não sobrou espaço, à esquerda
   const appRect = document.getElementById("app").getBoundingClientRect();
   const sideLeft = mascoteRect.right + 6;
   const sideWidth = Math.min(300, Math.min(rightEdge, appRect.right - margin) - sideLeft);
   const sideRight = mascoteRect.left - 6;
   const leftWidth = Math.min(300, sideRight - Math.max(leftEdge, appRect.left + margin));
-  const useLeft = sideWidth < 150 && leftWidth >= 150;
-  if (sideWidth >= 150 || useLeft) {
+  const useLeft = leftWidth > sideWidth;
+  if (Math.max(sideWidth, leftWidth) >= 110) {
     bubble.dataset.placement = useLeft ? "side-left" : "side";
     bubble.style.maxWidth = `${useLeft ? leftWidth : sideWidth}px`;
     width = bubble.offsetWidth;
@@ -816,7 +804,7 @@ function positionBubble() {
     return;
   }
 
-  // 3) Abaixo do mascote
+  // Sem espaço dos lados: abaixo do mascote
   bubble.dataset.placement = "below";
   bubble.style.maxWidth = `${rightEdge - leftEdge}px`;
   width = bubble.offsetWidth;
@@ -828,14 +816,60 @@ function positionBubble() {
     `${Math.max(16, Math.min(mascoteCX - left, width - 16))}px`);
 }
 
-function showBubble(text) {
+// ════════════════════════════════════════════════════════════
+// BALÃO ÚNICO — uma fala por vez, sempre colada no mascote. Cada fala
+// fica pelo menos MIN_BUBBLE_MS na tela: clicando mais rápido que isso,
+// as do meio são puladas e entra só a mais recente.
+// ════════════════════════════════════════════════════════════
+const MIN_BUBBLE_MS = 1500;
+let bubbleShownAt = 0;
+let pendingText = null;
+let pendingTimer;
+
+function clearPendingBubble() {
+  clearTimeout(pendingTimer);
+  pendingText = null;
+}
+
+function displayBubble(text) {
   clearTimeout(bubbleTimer);
-  bubble.textContent = text;
-  positionBubble();
-  bubble.classList.add("show");
+  const swapping = bubble.classList.contains("show");
+  bubbleShownAt = Date.now();
+
+  const apply = () => {
+    bubble.textContent = text;
+    positionBubble();
+    bubble.classList.remove("swapping");
+    bubble.classList.add("show");
+  };
+  if (swapping) {
+    // troca suave dentro do mesmo balão: o texto antigo apaga e o novo acende
+    bubble.classList.add("swapping");
+    setTimeout(apply, 120);
+  } else {
+    apply();
+  }
+
   // Tempo de leitura proporcional ao tamanho da piada
   const duration = Math.min(9000, 2500 + text.length * 55);
   bubbleTimer = setTimeout(() => bubble.classList.remove("show"), duration);
+}
+
+function showBubble(text) {
+  const shownFor = Date.now() - bubbleShownAt;
+  if (bubble.classList.contains("show") && shownFor < MIN_BUBBLE_MS) {
+    // ainda não deu tempo de ler: guarda só a mais recente
+    pendingText = text;
+    clearTimeout(pendingTimer);
+    pendingTimer = setTimeout(() => {
+      const next = pendingText;
+      pendingText = null;
+      if (next) displayBubble(next);
+    }, MIN_BUBBLE_MS - shownFor);
+    return;
+  }
+  clearPendingBubble();
+  displayBubble(text);
 }
 
 // Sorteia sem repetir até esgotar a lista
@@ -877,6 +911,10 @@ function syncViewport() {
     if (atBottom) scrollDown();
   }
   if (bubble.classList.contains("show")) positionBubble();
+  if (thorQueued && !document.documentElement.classList.contains("short-viewport")) {
+    thorQueued = false;
+    startThorMode();
+  }
 }
 
 window.addEventListener("resize", syncViewport);
@@ -994,6 +1032,10 @@ function moveMascot(x, y) {
   dodgeY = Math.round(Math.max(lim.minY, Math.min(lim.maxY, y)));
   mascoteWrap.style.translate = dodgeX || dodgeY ? `${dodgeX}px ${dodgeY}px` : "";
   followMascot();
+  // garantia: reposiciona no fim do pulo mesmo se a aba estiver em segundo plano
+  setTimeout(() => {
+    if (bubble.classList.contains("show")) positionBubble();
+  }, 260);
 }
 
 // O balão acompanha o mascote quadro a quadro enquanto ele se mexe
@@ -1044,9 +1086,67 @@ const RAGE_CLICKS = 3 * CLICKS_PER_LEVEL + 6; // 5 cliques depois de ficar furio
 const SITE_DOWN_KEY = "byteforge-site-derrubado"; // F5 não salva ninguém
 let crashed = false;
 
+// ════════════════════════════════════════════════════════════
+// EASTER EGG DO THOR — veste o traje, ergue o martelo e chama os raios
+// Aparece se a mensagem falar em Thor/Mjölnir/trovão, ou por sorte (14%
+// das mensagens, no máximo uma vez a cada 90 s)
+// ════════════════════════════════════════════════════════════
+const THOR_WORDS = /\b(thor|mj[oö]lnir|trov[aã]o|trovoada|rel[aâ]mpago)\b/i;
+const thorTimers = [];
+
+function endThorMode() {
+  clearTimeout(thorTimer);
+  thorTimers.splice(0).forEach(clearTimeout);
+  document.getElementById("app").classList.remove("thor-active");
+  mascoteWrap.classList.remove("thor");
+}
+
+function startThorMode() {
+  if (crashed || document.getElementById("boss-arena")) return;
+  endThorMode();
+  lastThorAt = Date.now();
+  document.getElementById("app").classList.add("thor-active");
+  mascoteWrap.classList.add("thor");
+  showBubble("⚡ Pelo martelo de Thor! QUE VENHA O TROVÃO!");
+
+  const reduced = matchMedia("(prefers-reduced-motion: reduce)").matches;
+  const later = (ms, fn) => thorTimers.push(setTimeout(fn, ms));
+
+  // 1º raio: do céu direto no martelo erguido
+  later(500, () => {
+    const head = mascoteWrap.querySelector(".hammer-head").getBoundingClientRect();
+    const hx = head.left + head.width / 2;
+    const hy = head.top + head.height / 2;
+    strikeLightning([hx + (Math.random() - 0.5) * 80, -10], [hx, hy], { width: 1.2, branches: 5 });
+  });
+
+  // depois, mais alguns pela tela
+  if (!reduced) {
+    [1300, 1750, 2350].forEach((ms) => later(ms, () => {
+      const x = innerWidth * (0.1 + Math.random() * 0.8);
+      strikeLightning(
+        [x + (Math.random() - 0.5) * 160, -10],
+        [x + (Math.random() - 0.5) * 120, innerHeight * (0.55 + Math.random() * 0.4)],
+        { width: 0.9 + Math.random() * 0.5, branches: 3 + Math.floor(Math.random() * 3) },
+      );
+    }));
+  }
+
+  thorTimer = setTimeout(endThorMode, 4200);
+}
+
+function maybeStartThorMode(text = "") {
+  const asked = THOR_WORDS.test(text);
+  if (crashed || thorQueued) return;
+  if (!asked && (Date.now() - lastThorAt < 90_000 || Math.random() >= 0.14)) return;
+  if (document.documentElement.classList.contains("short-viewport")) thorQueued = true;
+  else startThorMode();
+}
+
 // Cópia do mascote do cabeçalho (sem ids, para não duplicar) com outra cara
 function cloneMascot({ mouth, mouthFill = "none", brows = null }) {
   const svg = document.getElementById("byteforge").cloneNode(true);
+  svg.querySelector("#hammer-arm").classList.add("mascot-hammer-arm");
   svg.querySelector("#bot-mouth").setAttribute("d", mouth);
   svg.querySelector("#bot-mouth").setAttribute("fill", mouthFill);
   if (brows) {
@@ -1080,10 +1180,13 @@ function isSiteDown() {
 // O site só volta se o aluno vencer a boss fight (js/boss.js)
 function crashSite({ reloaded = false } = {}) {
   crashed = true;
+  thorQueued = false;
+  endThorMode();
   setSiteDown(true);
   clearTimeout(calmTimer);
   clearTimeout(bubbleTimer);
   bubble.classList.remove("show");
+  clearPendingBubble();
   const originalTitle = "ByteForge";
   document.title = "500 Internal Server Error";
 

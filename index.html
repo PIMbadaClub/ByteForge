@@ -42,12 +42,34 @@
             <!-- ── BRILHO DA FORJA embaixo ── -->
             <ellipse class="bot-fire-shadow" cx="50" cy="107" rx="30" ry="4" fill="rgba(255,100,0,.28)"/>
 
+            <!-- ── THOR: capa vermelha (atrás de tudo; só no modo Thor) ── -->
+            <g class="thor-part thor-cape" stroke-linejoin="round">
+                <path d="M 23 74 C 13 82 8 96 5 109 Q 15 104 23 109 Q 30 103 37 107 L 41 86 Z" fill="#9e1219" stroke="#5e080d" stroke-width="1.2"/>
+                <path d="M 76 73 C 86 81 93 95 97 109 Q 87 104 79 109 Q 72 103 65 107 L 61 86 Z" fill="#9e1219" stroke="#5e080d" stroke-width="1.2"/>
+                <path d="M 18 85 Q 13 96 10 105" fill="none" stroke="#d2232e" stroke-width="1.4" opacity=".75"/>
+                <path d="M 81 84 Q 87 95 91 105" fill="none" stroke="#d2232e" stroke-width="1.4" opacity=".75"/>
+            </g>
+
             <!-- ── PEDESTAL + BASE ── -->
             <polygon points="34,89 68,89 65,108 37,108" fill="#1a1b1f" stroke="#6b5530" stroke-width="1.5"/>
             <rect x="22" y="95.5" width="57" height="7" rx="3.5" fill="#141518"/>
 
             <!-- ── CORPO (ombros com contorno de brasa) ── -->
             <path d="M 19 77 Q 48 68 77 73 L 74 88 L 24 88 Z" fill="#3a2e22" stroke="#ff8c42" stroke-width="1.6" stroke-linejoin="round"/>
+            <!-- THOR: armadura com os discos no peito e ombreiras -->
+            <g class="thor-part thor-armor" stroke-linejoin="round">
+                <path d="M 21 77 Q 48 69 75 73.5 L 73 86 L 25 86 Z" fill="#2b3038" stroke="#9aa7b8" stroke-width="1.4"/>
+                <g fill="#c9d3df" stroke="#5b6676" stroke-width=".8">
+                    <circle cx="39" cy="77.5" r="2.6"/><circle cx="39" cy="83" r="2.6"/>
+                    <circle cx="59" cy="77.5" r="2.6"/><circle cx="59" cy="83" r="2.6"/>
+                </g>
+                <g fill="#7d8ba0">
+                    <circle cx="39" cy="77.5" r="1"/><circle cx="39" cy="83" r="1"/>
+                    <circle cx="59" cy="77.5" r="1"/><circle cx="59" cy="83" r="1"/>
+                </g>
+                <path d="M 16 78 Q 19 70 30 71.5 L 28 79.5 Q 21 78.5 16 78 Z" fill="#aeb8c6" stroke="#5b6676" stroke-width="1"/>
+                <path d="M 80 74 Q 76 67.5 66 69.5 L 67.5 77 Q 75 76 80 74 Z" fill="#aeb8c6" stroke="#5b6676" stroke-width="1"/>
+            </g>
 
             <!-- ── CABEÇA ── -->
             <rect x="21" y="28" width="58" height="40" rx="18" fill="#22262d" stroke="#14161a" stroke-width="1.5"/>
@@ -59,13 +81,18 @@
             <rect class="anger-tint" x="25" y="33" width="50" height="31" rx="14" fill="#ff2a00"/>
 
             <!-- ── CAPACETE VIKING ── -->
-            <path d="M 28 24 Q 13 22 12 6 Q 19 15 31 16 Z" fill="#d4c9b8" stroke="#7a7063" stroke-width="1.5" stroke-linejoin="round"/>
-            <path d="M 72 24 Q 87 22 88 6 Q 81 15 69 16 Z" fill="#d4c9b8" stroke="#7a7063" stroke-width="1.5" stroke-linejoin="round"/>
-            <path d="M 23 27 C 23 8 77 8 77 27 Z" fill="#464b54" stroke="#1d2126" stroke-width="1.5"/>
-            <rect x="19" y="24" width="62" height="8.5" rx="4.2" fill="#8c6832" stroke="#4a3517" stroke-width="1.5"/>
+            <path class="horns" d="M 28 24 Q 13 22 12 6 Q 19 15 31 16 Z" fill="#d4c9b8" stroke="#7a7063" stroke-width="1.5" stroke-linejoin="round"/>
+            <path class="horns" d="M 72 24 Q 87 22 88 6 Q 81 15 69 16 Z" fill="#d4c9b8" stroke="#7a7063" stroke-width="1.5" stroke-linejoin="round"/>
+            <path class="helmet-dome" d="M 23 27 C 23 8 77 8 77 27 Z" fill="#464b54" stroke="#1d2126" stroke-width="1.5"/>
+            <rect class="helmet-band" x="19" y="24" width="62" height="8.5" rx="4.2" fill="#8c6832" stroke="#4a3517" stroke-width="1.5"/>
             <circle cx="28.5" cy="28.2" r="1.4" fill="#e0c294"/>
             <circle cx="50" cy="28.2" r="1.4" fill="#e0c294"/>
             <circle cx="71.5" cy="28.2" r="1.4" fill="#e0c294"/>
+            <!-- THOR: asas no capacete (substituem os chifres) -->
+            <g class="thor-part thor-wings" fill="#e9eef5" stroke="#8b97a8" stroke-width="1.1" stroke-linejoin="round">
+                <path d="M 22 25 C 14 24 7 18 3 7 C 8 10 12 10 15 9 C 11 13 12 16 16 16 C 13 19 15 21 20 21 Z"/>
+                <path d="M 78 25 C 86 24 93 18 97 7 C 92 10 88 10 85 9 C 89 13 88 16 84 16 C 87 19 85 21 80 21 Z"/>
+            </g>
 
             <!-- ── OLHOS (pupilas seguem o mouse) ── -->
             <g class="eye">
@@ -114,7 +141,7 @@
                 <line x1="70" y1="78" x2="75" y2="63" stroke="#ff8c42" stroke-width="7.5" stroke-linecap="round"/>
                 <line x1="70" y1="78" x2="75" y2="63" stroke="#3a2e22" stroke-width="4.5" stroke-linecap="round"/>
                 <line x1="75" y1="62" x2="83" y2="46" stroke="#4a2e15" stroke-width="4" stroke-linecap="round"/>
-                <g transform="rotate(-30 84 44)">
+                <g class="hammer-head" transform="rotate(-30 84 44)">
                     <rect x="77" y="34" width="14" height="20" rx="2.5" fill="#5a616b" stroke="#8ca6c2" stroke-width="1.8"/>
                     <rect x="75.5" y="32" width="17" height="4" rx="1.4" fill="#3b4047" stroke="#8ca6c2" stroke-width="1"/>
                     <rect x="75.5" y="52" width="17" height="4" rx="1.4" fill="#3b4047" stroke="#8ca6c2" stroke-width="1"/>
@@ -122,6 +149,13 @@
                 </g>
                 <circle cx="75" cy="62" r="5.5" fill="#5c4033" stroke="#ff8c42" stroke-width="2"/>
                 <circle cx="78.5" cy="58.5" r="3" fill="#5c4033" stroke="#ff8c42" stroke-width="1.5"/>
+                <!-- THOR: eletricidade estalando no martelo -->
+                <g class="thor-part thor-sparks" fill="none" stroke="#d9f6ff" stroke-width="1.1" stroke-linecap="round" stroke-linejoin="round">
+                    <polyline class="spark-arc a1" points="91,31 95,28 93,25 98,21"/>
+                    <polyline class="spark-arc a2" points="77,31 73,27 76,24 72,19"/>
+                    <polyline class="spark-arc a3" points="94,46 99,47 97,51 102,53"/>
+                    <polyline class="spark-arc a4" points="86,27 87,22 84,19 86,14"/>
+                </g>
             </g>
 
             <!-- ── CÓDIGO FLUTUANDO EM VOLTA ── -->
@@ -178,7 +212,7 @@
     </div>
 
     <!-- balão de pensamento do mascote (position: fixed via JS) -->
-    <div id="thought-bubble"></div>
+    <div id="thought-bubble" class="thought-bubble"></div>
 
     <!-- ══════════════════════════════════════
          INPUT
@@ -202,6 +236,7 @@
 <script src="js/brain.js" charset="UTF-8"></script>
 <script src="js/exercicios.js" charset="UTF-8"></script>
 <script src="js/ai.js" charset="UTF-8"></script>
+<script src="js/raios.js" charset="UTF-8"></script>
 <script src="js/script.js" charset="UTF-8"></script>
 <script src="js/boss.js" charset="UTF-8"></script>
 </body>

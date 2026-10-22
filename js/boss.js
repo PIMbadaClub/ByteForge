@@ -26,7 +26,7 @@ const BOSS_LINES = {
     "Esse passou pro cliente! 😈",
     "Ninguém revisou esse PR!",
   ],
-  phase2: "😠 Agora eu fiquei BRAVO! Deploy na sexta-feira!",
+  phase2: "⚡ Metade da vida? Então conheça o martelo do trovão!",
   phase3: "🤬 MODO PRODUÇÃO ATIVADO! SEM ROLLBACK!",
 };
 
@@ -118,16 +118,33 @@ function startBossFight(onWin) {
     const b = bossBtn.getBoundingClientRect();
     const el = document.createElement("button");
     el.type = "button";
-    el.className = "boss-bug";
-    el.textContent = BOSS_ATTACKS[Math.floor(Math.random() * BOSS_ATTACKS.length)];
-    el.setAttribute("aria-label", `Esmagar ${el.textContent}`);
+    // fase do trovão: às vezes, em vez de um erro, uma bola de plasma
+    const lightning = state.phase >= 2 && Math.random() < (state.phase === 3 ? 0.5 : 0.38);
+    let start = [b.left - f.left + b.width / 2, b.top - f.top + b.height * 0.7];
+    el.className = lightning ? "boss-orb" : "boss-bug";
+    if (lightning) {
+      el.setAttribute("aria-label", "Dissipar bola de plasma");
+      el.innerHTML = '<svg aria-hidden="true"></svg>';
+      bossBtn.classList.add("casting");
+      setTimeout(() => bossBtn.classList.remove("casting"), 600);
+      // o raio cai do céu no martelo erguido e vira a bola de plasma
+      const head = bossBtn.querySelector(".hammer-head").getBoundingClientRect();
+      start = [head.left - f.left + head.width / 2, head.top - f.top + head.height / 2];
+      strikeLightning([start[0] + (Math.random() - 0.5) * 80, 0], start,
+        { host: field, width: 0.9, branches: 3, duration: 420 });
+    } else {
+      el.textContent = BOSS_ATTACKS[Math.floor(Math.random() * BOSS_ATTACKS.length)];
+      el.setAttribute("aria-label", `Esmagar ${el.textContent}`);
+    }
     field.appendChild(el);
     const p = {
       el,
-      x: b.left - f.left + b.width / 2 - el.offsetWidth / 2,
-      y: b.top - f.top + b.height * 0.7,
-      vx: (Math.random() - 0.5) * 120 * phaseSpeed(),
-      vy: (70 + Math.random() * 50) * phaseSpeed() * ease,
+      lightning,
+      x: start[0] - el.offsetWidth / 2,
+      y: start[1] - (lightning ? el.offsetHeight / 2 : 0),
+      vx: (Math.random() - 0.5) * (lightning ? 50 : 120) * phaseSpeed(),
+      vy: (lightning ? 115 : 70 + Math.random() * 50) * phaseSpeed() * ease,
+      crackleAt: 0,
     };
     projectiles.add(p);
     el.addEventListener("pointerdown", (e) => {
@@ -144,6 +161,17 @@ function startBossFight(onWin) {
     p.el.classList.add("squashed");
     p.el.disabled = true;
     setTimeout(() => p.el.remove(), 300);
+    if (p.lightning) {
+      // a bola estoura em faíscas curtas para todos os lados
+      const cx = p.x + p.el.offsetWidth / 2;
+      const cy = p.y + p.el.offsetHeight / 2;
+      for (let i = 0; i < 4; i++) {
+        const a = (i / 4) * Math.PI * 2 + Math.random();
+        const r = 40 + Math.random() * 30;
+        strikeLightning([cx, cy], [cx + Math.cos(a) * r, cy + Math.sin(a) * r],
+          { host: field, width: 0.5, branches: 1, flash: false, duration: 300 });
+      }
+    }
   }
 
   function popText(text, x, y, cls) {
@@ -176,6 +204,7 @@ function startBossFight(onWin) {
     } else if (state.phase < 2 && state.hp <= maxHp * 0.5) {
       state.phase = 2;
       arena.dataset.phase = 2;
+      bossBtn.classList.add("thor");
       talk(BOSS_LINES.phase2, 2400);
     } else if (Math.random() < 0.3) {
       talk(BOSS_LINES.hit[Math.floor(Math.random() * BOSS_LINES.hit.length)]);
@@ -187,11 +216,17 @@ function startBossFight(onWin) {
   function hurtPlayer(p) {
     projectiles.delete(p);
     p.el.remove();
+    if (p.lightning) {
+      // a bola chegou ao chão: cai um raio de verdade ali
+      const x = p.x + p.el.offsetWidth / 2;
+      strikeLightning([x + (Math.random() - 0.5) * 120, 0], [x, field.clientHeight - 2],
+        { host: field, width: 1.3, branches: 5 });
+    }
     state.hearts -= 1;
     updateHud();
-    arena.classList.remove("hurt");
+    arena.classList.remove("hurt", "electric-hurt");
     void arena.offsetWidth;
-    arena.classList.add("hurt");
+    arena.classList.add(p.lightning ? "electric-hurt" : "hurt");
     if (state.hearts <= 0) return lose();
     talk(BOSS_LINES.hurt[Math.floor(Math.random() * BOSS_LINES.hurt.length)]);
   }
@@ -211,6 +246,11 @@ function startBossFight(onWin) {
         p.x = Math.max(0, Math.min(width - w, p.x));
       }
       p.el.style.transform = `translate(${p.x}px, ${p.y}px)`;
+      // faíscas da bola de plasma mudam a cada ~70 ms (estalando)
+      if (p.lightning && now - p.crackleAt > 70) {
+        p.crackleAt = now;
+        crackle(p.el.firstChild, p.el.offsetWidth);
+      }
       if (p.y > height - p.el.offsetHeight) hurtPlayer(p);
       if (!state.running) return;
     }
@@ -297,7 +337,7 @@ function startBossFight(onWin) {
         <li>👆 <strong>Clique ou toque no chefe</strong> para tirar vida dele. Ele não fica parado!</li>
         <li>🐞 <strong>Esmague os erros</strong> que ele lança antes que cheguem lá embaixo.</li>
         <li>❤️ Cada erro que passa custa <strong>um coração</strong>. Perdeu todos, o build quebra.</li>
-        <li>😠 Com metade da vida ele fica bravo e, com 25%, entra em <strong>modo produção</strong>.</li>
+        <li>🤬 Quando a vida dele estiver no fim, ele entra em <strong>modo produção</strong> e ataca mais rápido.</li>
         <li>🔥 Vença e o site volta ao ar.</li>
       </ul>`,
       "⚔️ Começar a luta",

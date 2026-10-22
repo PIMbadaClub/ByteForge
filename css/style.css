@@ -1191,7 +1191,7 @@ body {
 }
 
 /* ── THOUGHT BUBBLE ───────────────────────────────────────── */
-#thought-bubble {
+.thought-bubble {
     position: fixed;
     background: #221c10;
     border: 1px solid #5c4020;
@@ -1210,10 +1210,10 @@ body {
     box-shadow: 0 4px 20px rgba(0,0,0,.6), 0 0 16px rgba(255,140,42,.15);
 }
 
-#thought-bubble.show { opacity: 1; }
+.thought-bubble.show { opacity: 1; }
 
 /* triângulo apontando para baixo (em direção ao título) */
-#thought-bubble::after {
+.thought-bubble::after {
     content: '';
     position: absolute;
     top: 100%;
@@ -1224,7 +1224,7 @@ body {
     border-color: #5c4020 transparent transparent transparent;
 }
 
-#thought-bubble[data-placement="below"]::after {
+.thought-bubble[data-placement="below"]::after {
     top: auto;
     bottom: 100%;
     border-width: 0 8px 8px;
@@ -1232,7 +1232,7 @@ body {
 }
 
 /* ao lado do mascote (celular): seta apontando para a esquerda */
-#thought-bubble[data-placement="side"]::after {
+.thought-bubble[data-placement="side"]::after {
     top: var(--pointer-top, 50%);
     left: auto;
     right: 100%;
@@ -1241,12 +1241,12 @@ body {
     border-color: transparent #5c4020 transparent transparent;
 }
 
-#thought-bubble[data-placement="side"] {
+.thought-bubble[data-placement="side"] {
     transform-origin: left center;
 }
 
 /* à esquerda do mascote (ele fugiu para a direita): seta para a direita */
-#thought-bubble[data-placement="side-left"]::after {
+.thought-bubble[data-placement="side-left"]::after {
     top: var(--pointer-top, 50%);
     left: 100%;
     transform: translateY(-50%);
@@ -1254,16 +1254,22 @@ body {
     border-color: transparent transparent transparent #5c4020;
 }
 
-#thought-bubble[data-placement="side-left"] {
+.thought-bubble[data-placement="side-left"] {
     transform-origin: right center;
 }
 
-#thought-bubble {
+.thought-bubble {
     transform: scale(.92);
     transition: opacity .25s, transform .25s cubic-bezier(.2, .9, .3, 1.3);
 }
 
-#thought-bubble.show { transform: scale(1); }
+.thought-bubble.show { transform: scale(1); }
+
+/* troca de fala dentro do mesmo balão: apaga rápido e acende de novo */
+.thought-bubble.swapping {
+    opacity: 0;
+    transition: opacity .1s;
+}
 
 /* ── ENTRADA DAS MENSAGENS ────────────────────────────────── */
 @keyframes msg-in {
@@ -1306,7 +1312,7 @@ body {
 
 @media (prefers-reduced-motion: reduce) {
     #chat-window > *,
-    #thought-bubble {
+    .thought-bubble {
         animation: none;
         transition: opacity .2s;
         transform: none;
@@ -1467,4 +1473,140 @@ body {
 
 .short-viewport #input-area {
     padding: 8px calc(8px + env(safe-area-inset-right, 0px)) calc(8px + env(safe-area-inset-bottom, 0px)) calc(8px + env(safe-area-inset-left, 0px));
+}
+
+/* ── MODO THOR: traje (capa, armadura, capacete alado) e raios ───── */
+/* As peças do traje ficam no SVG do mascote e só aparecem com .thor:
+   no cabeçalho (#mascote-wrap.thor) e no chefe a partir da fase 2. */
+.thor-part { display: none; }
+.thor .thor-part { display: inline; }
+.thor .horns { display: none; }
+
+.thor .helmet-dome { fill: #a7b1bf; stroke: #59636f; }
+.thor .helmet-band { fill: #d3dae3; stroke: #6b7686; }
+
+/* olhos brilhando com o poder do trovão */
+.thor .eye ellipse { fill: #effcff; stroke: #5cc8ff; }
+.thor .eye circle { opacity: .18; }
+.thor .eye { filter: drop-shadow(0 0 2.5px #7fd8ff); }
+
+.thor .hammer-head rect { stroke: #bfe9ff; }
+.thor .hammer-head polyline { stroke: #f4fdff; filter: drop-shadow(0 0 2px #59c3ff); }
+
+/* faíscas estalando no martelo */
+.spark-arc {
+    opacity: 0;
+    filter: drop-shadow(0 0 1.5px #6fd3ff);
+    animation: spark-crackle .9s steps(1, end) infinite;
+}
+.spark-arc.a2 { animation-delay: -.3s; }
+.spark-arc.a3 { animation-delay: -.55s; }
+.spark-arc.a4 { animation-delay: -.75s; }
+
+@keyframes spark-crackle {
+    0%   { opacity: 1; }
+    12%  { opacity: 0; }
+    30%  { opacity: .8; }
+    38%  { opacity: 0; }
+}
+
+#mascote-wrap.thor { filter: drop-shadow(0 0 12px rgba(86,199,255,.75)); }
+/* pose do Thor: martelo erguido para o céu enquanto chama o raio */
+#mascote-wrap.thor #hammer-arm { animation: none; transform: rotate(0deg); }
+
+.boss.thor { filter: drop-shadow(0 0 16px rgba(86,199,255,.85)); }
+#boss-arena[data-phase="3"] .boss.thor { filter: drop-shadow(0 0 20px rgba(140,210,255,1)); }
+.boss.thor .anger-tint { fill: #1f7dff; }
+#boss-arena[data-phase="2"] .boss-hp-fill,
+#boss-arena[data-phase="3"] .boss-hp-fill {
+    background: linear-gradient(90deg, #1f4fd1, #4fb6ff, #d6f6ff);
+}
+
+/* chefe erguendo o martelo para chamar o raio */
+.mascot-hammer-arm { transform-origin: 70px 76px; }
+.boss.casting .mascot-hammer-arm { animation: hammer-cast .6s ease-out; }
+@keyframes hammer-cast {
+    0%, 100% { transform: rotate(0deg); }
+    30%, 70% { transform: rotate(18deg); }
+}
+
+/* ── RELÂMPAGOS (desenhados por js/raios.js) ───────────────── */
+.raio-layer {
+    position: fixed;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+    z-index: 1100;
+    overflow: visible;
+    mix-blend-mode: screen;
+}
+.raio-layer.in-field { position: absolute; z-index: 4; }
+
+.raio-flash {
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    z-index: 1099;
+    background: radial-gradient(ellipse at var(--fx, 50%) var(--fy, 0%), rgba(200,228,255,.6), rgba(90,150,255,.22) 40%, transparent 75%);
+    mix-blend-mode: screen;
+    opacity: 0;
+}
+.raio-flash.in-field { position: absolute; z-index: 3; }
+
+/* bola de plasma que o chefe lança na fase do trovão */
+.boss-orb {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 46px;
+    height: 46px;
+    padding: 0;
+    border: 0;
+    border-radius: 50%;
+    cursor: pointer;
+    z-index: 2;
+    background: radial-gradient(circle, #ffffff 0 16%, #c9f1ff 26%, #59b8ff 46%, rgba(30,110,255,.35) 62%, transparent 70%);
+    box-shadow: 0 0 18px 6px rgba(80,170,255,.55), 0 0 40px 12px rgba(40,110,255,.25);
+    animation: orb-pulse .18s ease-in-out infinite alternate;
+}
+.boss-orb svg {
+    position: absolute;
+    inset: -14px;
+    width: calc(100% + 28px);
+    height: calc(100% + 28px);
+    overflow: visible;
+    pointer-events: none;
+}
+.boss-orb:focus-visible { outline: 2px dashed #b7f3ff; outline-offset: 6px; }
+.boss-orb.squashed { animation: orb-pop .25s ease-out forwards; pointer-events: none; }
+
+@keyframes orb-pulse {
+    from { scale: .92; filter: brightness(1); }
+    to   { scale: 1.06; filter: brightness(1.35); }
+}
+
+@keyframes orb-pop {
+    to { scale: 2.2; opacity: 0; filter: blur(3px); }
+}
+
+#boss-arena.electric-hurt { animation: electric-hurt .4s ease-out; }
+@keyframes electric-hurt {
+    0%   { box-shadow: inset 0 0 0 9999px rgba(190,230,255,.55); }
+    30%  { box-shadow: inset 0 0 0 9999px rgba(52,140,255,.3); }
+    100% { box-shadow: inset 0 0 0 9999px rgba(52,140,255,0); }
+}
+
+#app.thor-active {
+    box-shadow:
+        0 0 0 1px rgba(110,190,255,.35),
+        0 10px 60px rgba(0,0,0,.9),
+        0 0 70px rgba(64,150,255,.35);
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .spark-arc { animation: none; opacity: .8; }
+    .boss.casting .mascot-hammer-arm { animation: none; }
+    .boss-orb { animation: none; }
+    #boss-arena.electric-hurt { animation: none; }
 }
