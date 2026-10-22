@@ -141,12 +141,110 @@ function setGroqApiKey(key) {
 }
 
 const INTERNAL_BRAIN = typeof brain !== "undefined" ? brain : LOCAL_FALLBACK;
+const LOCAL_EXERCISES = typeof exercicios !== "undefined" ? exercicios : [];
+
+// A palavra-chave precisa começar uma palavra ("impar" não casa com "limpar")
+function keyScore(clean, key) {
+  const k = key.trim().toLowerCase();
+  if (!k) return 0;
+  const escaped = k.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+  return new RegExp(`(^|[^\\p{L}\\p{N}])${escaped}`, "u").test(clean) ? k.length : 0;
+}
+
+// Escolhe a entrada cuja palavra-chave mais longa aparece no texto
+// ("typescript" ganha de "type")
+function findBest(list, userText) {
+  const clean = ` ${userText.toLowerCase()} `;
+  let best = null;
+  let bestScore = 0;
+  for (const item of list) {
+    const score = Math.max(0, ...item.keys.map((key) => keyScore(clean, key)));
+    if (score > bestScore) {
+      best = item;
+      bestScore = score;
+    }
+  }
+  return best;
+}
 
 function getLocalAnswer(userText) {
-  const clean = userText.toLowerCase();
-  return INTERNAL_BRAIN.find((item) =>
-    item.keys.some((key) => clean.includes(key)),
-  );
+  return findBest(INTERNAL_BRAIN, userText);
+}
+
+// ════════════════════════════════════════════════════════════
+// TUTOR OFFLINE — exercício em andamento e pista atual
+// ════════════════════════════════════════════════════════════
+let currentExercise = null; // { ex, step }
+
+const STUCK_WORDS = /travei|não sei|nao sei|desisto|pista|dica|ajuda|não entendi|nao entendi|não consegui|nao consegui|socorro/i;
+
+function localTutorAnswer(userText) {
+  const newExercise = findBest(LOCAL_EXERCISES, userText);
+  if (newExercise && newExercise !== currentExercise?.ex) {
+    currentExercise = { ex: newExercise, step: 0 };
+    return pistaParts(newExercise.pistas[0]);
+  }
+
+  if (!currentExercise) return null;
+  const { ex } = currentExercise;
+
+  if (ex.acerto.test(userText)) {
+    currentExercise = null;
+    return [{ type: "text", content: ex.parabens }];
+  }
+
+  // Mudou de assunto: sai do exercício e deixa o banco de respostas tentar
+  if (getLocalAnswer(userText) && !STUCK_WORDS.test(userText)) {
+    currentExercise = null;
+    return null;
+  }
+
+  currentExercise.step = Math.min(currentExercise.step + 1, ex.pistas.length - 1);
+  const parts = pistaParts(ex.pistas[currentExercise.step]);
+  if (currentExercise.step === ex.pistas.length - 1) {
+    parts.push({
+      type: "text",
+      content: "Essa foi a minha última pista. Tenta montar o código e me manda aqui que eu confiro com você! 🔨",
+    });
+  }
+  return parts;
+}
+
+function pistaParts(pista) {
+  const parts = [{ type: "text", content: pista.text }];
+  if (pista.code) parts.push({ type: "code", lang: pista.lang || "text", content: pista.code });
+  parts.push({
+    type: "text",
+    content: "Travou? Me conta o que tentou que eu te dou a próxima pista.",
+  });
+  return parts;
+}
+
+function brainParts(item) {
+  const parts = [{ type: "text", content: item.text }];
+  if (item.code) parts.push({ type: "code", lang: item.lang || "text", content: item.code });
+  if (item.pergunta) parts.push({ type: "text", content: item.pergunta });
+  return parts;
+}
+
+// ════════════════════════════════════════════════════════════
+// HISTÓRICO — a IA precisa lembrar da conversa para dar a
+// "próxima pista" em vez de recomeçar do zero a cada mensagem
+// ════════════════════════════════════════════════════════════
+const chatHistory = [];
+
+function rememberTurn(userText, parts) {
+  const answer = parts
+    .filter((p) => p.type !== "note")
+    .map((p) => (p.type === "code" ? "```" + p.lang + "\n" + p.content + "\n```" : p.content))
+    .join("\n\n");
+  chatHistory.push({ role: "user", content: userText }, { role: "assistant", content: answer });
+  chatHistory.splice(0, Math.max(0, chatHistory.length - 12));
+}
+
+function resetConversation() {
+  chatHistory.length = 0;
+  currentExercise = null;
 }
 
 function isOfflineError(error) {
@@ -163,7 +261,10 @@ function buildPrompt(userText) {
 
 function parseAiResponse(text) {
   const blocks = [];
-  const regex = /```(\w+)?\n([\s\S]*?)```/g;
+  text = text.replace(/<think>[\s\S]*?<\/think>/g, "").replace(/\r\n/g, "\n");
+  // Bloco de código que veio sem fechar (resposta cortada): fecha no fim
+  if ((text.match(/```/g) || []).length % 2 === 1) text += "\n```";
+  const regex = /```([\w+#-]*)[^\n]*\n([\s\S]*?)```/g;
   let lastIndex = 0;
   let match;
 
@@ -189,7 +290,7 @@ function parseAiResponse(text) {
   return blocks.filter((block) => block.content.length > 0);
 }
 
-async function queryGroq(prompt) {
+async function queryGroq(prompt, history = []) {
   const token = getGroqApiKey();
   const useProxy = GROQ_USE_PROXY;
   const endpoint = useProxy
@@ -204,12 +305,7 @@ async function queryGroq(prompt) {
   try {
     const payload = {
       inputs: prompt,
-      options: { wait_for_model: true },
-      parameters: {
-        max_new_tokens: 500,
-        temperature: 0.2,
-        return_full_text: false,
-      },
+      messages: [...history, { role: "user", content: prompt }],
     };
     const headers = {
       Accept: "application/json",
@@ -248,7 +344,7 @@ async function queryGroq(prompt) {
 
   const data = await response.json();
   if (Array.isArray(data) && data[0]?.generated_text) {
-    return data[0].generated_text;
+    return { text: data[0].generated_text, truncated: Boolean(data[0].truncated) };
   }
   if (data.error) {
     const errMsg =
@@ -260,79 +356,60 @@ async function queryGroq(prompt) {
   throw new Error("Resposta inválida da API do Groq");
 }
 
+// Resposta do plano B: exercício guiado > banco de respostas > aviso
+function localAnswer(userText, note) {
+  const tutor = localTutorAnswer(userText);
+  const match = tutor ? null : getLocalAnswer(userText);
+  let parts;
+
+  if (tutor) {
+    parts = tutor;
+  } else if (match) {
+    parts = brainParts(match);
+  } else {
+    return {
+      parts: [{
+        type: "text",
+        content: "Ainda não tenho uma resposta guardada para isso e a IA está fora do ar agora. 😅 Tenta um tema como **Python**, **JavaScript**, **Git** ou **SQL**, ou um exercício clássico: *inverter uma palavra*, *par ou ímpar*, *tabuada*, *fatorial*, *FizzBuzz*...",
+      }],
+      source: "error",
+    };
+  }
+
+  if (note) parts.push({ type: "note", content: note });
+  rememberTurn(userText, parts);
+  return { parts, source: "local" };
+}
+
 async function getAIResponse(userText) {
-  const localMatch = getLocalAnswer(userText);
   const useBrowserAi = GROQ_USE_PROXY || (hasGroqApiKey() && !isFileProtocol());
 
   if (!useBrowserAi) {
-    if (localMatch) {
-      const parts = [{ type: "text", content: localMatch.text }];
-      if (localMatch.code)
-        parts.push({
-          type: "code",
-          lang: localMatch.lang || "text",
-          content: localMatch.code,
-        });
-      parts.push({
-        type: "text",
-        content:
-          "Nota: estou usando a resposta local porque o chat não pode acessar o Groq diretamente nesse modo. Rode o projeto via servidor local ou configure um backend para IA completa.",
-      });
-      return { parts, source: "local" };
-    }
-
-    const message =
-      "Ainda não tenho uma resposta pronta para isso sem conexão com a IA. Use um tópico como JavaScript, Python, Git, CSS, API, Node.js, SQL, Docker ou carreira. Configure sua chave do Groq com setGroqApiKey('SEU_TOKEN') ou defina GROQ_API_KEY no backend em produção.";
-
-    return {
-      parts: [
-        {
-          type: "text",
-          content: message,
-        },
-      ],
-      source: "local",
-    };
+    return localAnswer(userText, "Modo offline: resposta da forja local.");
   }
 
   try {
     const prompt = buildPrompt(userText);
-    const text = await queryGroq(prompt);
+    const { text, truncated } = await queryGroq(prompt, chatHistory);
     const parts = parseAiResponse(text);
-    if (parts.length > 0) return { parts, source: "groq" };
-    throw new Error("Resposta vazia da IA");
+    if (!parts.length) throw new Error("Resposta vazia da IA");
+
+    if (truncated) {
+      parts.push({
+        type: "note",
+        content: "A resposta ficou longa e foi cortada. Pede \"continua\" que eu sigo de onde parei.",
+      });
+    }
+    // A IA assumiu a conversa: o exercício offline não continua por baixo
+    currentExercise = null;
+    rememberTurn(userText, parts);
+    return { parts, source: "groq" };
   } catch (error) {
     console.warn("Falha na IA do Groq:", error);
-    const offline = isOfflineError(error);
-
-    if (localMatch) {
-      const parts = [{ type: "text", content: localMatch.text }];
-      if (localMatch.code)
-        parts.push({
-          type: "code",
-          lang: localMatch.lang || "text",
-          content: localMatch.code,
-        });
-      parts.push({
-        type: "text",
-        content: offline
-          ? "Desculpe, tive um problema de conexão ao acessar a API do Groq, então usei uma resposta preparada localmente para continuar ajudando. Tente novamente quando estiver online ou rode o projeto via servidor local para acessar a IA completa."
-          : "Desculpe, tive um problema ao acessar a API do Groq, então usei uma resposta preparada localmente para continuar ajudando. Tente novamente em alguns instantes ou rode o projeto com a API disponível para respostas completas.",
-      });
-      return { parts, source: "local" };
-    }
-
-    return {
-      parts: [
-        {
-          type: "text",
-          content: offline
-            ? "Não consegui acessar a IA do Groq agora e não encontrei uma resposta pronta no meu banco interno. Tente novamente quando estiver online ou use um servidor local/proxy para acessar a IA completa."
-            : "Ocorreu um problema ao acessar a IA do Groq e não encontrei uma resposta pronta no meu banco interno. Tente outro tópico de programação ou abra o projeto em um servidor local para usar a API completa.",
-        },
-      ],
-      source: "error",
-    };
+    const note = isOfflineError(error)
+      ? "Sem conexão com a IA agora: usei a forja local."
+      : "A IA não respondeu agora: usei a forja local.";
+    return localAnswer(userText, note);
   }
 }
 

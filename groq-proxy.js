@@ -1,10 +1,9 @@
+// Proxy local para desenvolvimento: faz o mesmo que a função da Vercel
+// (api/groq.js), na porta 3000. Rode com:  GROQ_API_KEY=sua_chave node groq-proxy.js
 const http = require("http");
 
 const PORT = 3000;
 const GROQ_API_KEY = process.env.GROQ_API_KEY || "";
-const GROQ_MODEL = "openai/gpt-oss-20b";
-const SYSTEM_PROMPT =
-  "Você é ByteForge, um assistente de programação que ajuda novos programadores com conceitos de programação e boas práticas, ensinando eles ao invés de dar a resposta diretamente. Responda sempre em português, de forma clara e direta. Use blocos de código Markdown quando apresentar código. Foque em tópicos de programação e sempre busque ensinar ao invés de dar o código apenas. Se o usuário pedir algo fora de programação, responda que seu foco é programação e sugira exemplos úteis. Seja breve e direto.";
 
 function corsHeaders() {
   return {
@@ -38,45 +37,18 @@ const server = http.createServer((req, res) => {
   req.on("end", async () => {
     try {
       if (!GROQ_API_KEY) {
-        throw new Error("Preencha GROQ_API_KEY em groq-proxy.js");
+        throw new Error("Defina a variável de ambiente GROQ_API_KEY antes de rodar o proxy.");
       }
 
-      const { inputs, parameters } = JSON.parse(body);
-      const maxTokens = parameters?.max_new_tokens || 500;
+      // Mesma "regra da casa" da Vercel
+      const { askGroq } = await import("./api/_tutor.mjs");
+      const { text, truncated } = await askGroq(GROQ_API_KEY, JSON.parse(body));
 
-      const groqRes = await fetch(
-        "https://api.groq.com/openai/v1/chat/completions",
-        {
-          method: "POST",
-          headers: {
-            Authorization: `Bearer ${GROQ_API_KEY}`,
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            model: GROQ_MODEL,
-            messages: [
-              { role: "system", content: SYSTEM_PROMPT },
-              { role: "user", content: inputs },
-            ],
-            max_tokens: maxTokens,
-          }),
-        },
-      );
-
-      const data = await groqRes.json();
-
-      if (!groqRes.ok) {
-        throw new Error(
-          data.error?.message || `Groq retornou status ${groqRes.status}`,
-        );
-      }
-
-      const text = data.choices?.[0]?.message?.content ?? "";
       res.writeHead(200, {
         ...corsHeaders(),
         "Content-Type": "application/json",
       });
-      res.end(JSON.stringify([{ generated_text: text }]));
+      res.end(JSON.stringify([{ generated_text: text, truncated }]));
     } catch (error) {
       res.writeHead(500, {
         ...corsHeaders(),

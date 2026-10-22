@@ -89,17 +89,49 @@ function renderTextMarkdown(text) {
     }
   }
 
+  // Tabela markdown: junta as linhas "| a | b |" e desenha como <table>
+  let tableRows = [];
+
+  function closeTable() {
+    if (!tableRows.length) return;
+    const cells = (row) => row.replace(/^\||\|$/g, "").split("|").map((c) => c.trim());
+    const [head, ...body] = tableRows;
+    output += '<div class="md-table"><table><thead><tr>'
+      + cells(head).map((c) => `<th>${c}</th>`).join("")
+      + "</tr></thead><tbody>"
+      + body.map((r) => "<tr>" + cells(r).map((c) => `<td>${c}</td>`).join("") + "</tr>").join("")
+      + "</tbody></table></div>";
+    tableRows = [];
+  }
+
   lines.forEach((line, index) => {
     const trimmed = line.trim();
     const headingMatch = trimmed.match(/^(#{1,6})\s+(.*)$/);
     const bulletMatch = trimmed.match(/^[-*]\s+(.*)$/);
     const orderedMatch = trimmed.match(/^\d+\.\s+(.*)$/);
 
-    if (headingMatch) {
+    if (trimmed.startsWith("|")) {
+      closeParagraph();
+      closeLists();
+      // linha separadora "|---|:---:|" não vira linha da tabela
+      if (!/^\|?[\s:|-]+\|?$/.test(trimmed)) tableRows.push(trimmed);
+      if (index === lines.length - 1) closeTable();
+      return;
+    }
+    closeTable();
+
+    if (/^(-{3,}|\*{3,}|_{3,})$/.test(trimmed)) {
+      closeParagraph();
+      closeLists();
+    } else if (headingMatch) {
       closeParagraph();
       closeLists();
       const level = Math.min(6, headingMatch[1].length);
       output += `<h${level}>${headingMatch[2]}</h${level}>`;
+    } else if (/^&gt;\s?/.test(trimmed)) {
+      closeParagraph();
+      closeLists();
+      output += `<blockquote>${trimmed.replace(/^&gt;\s?/, "")}</blockquote>`;
     } else if (bulletMatch) {
       closeParagraph();
       if (inOrderedList) {
@@ -330,9 +362,26 @@ function renderAiResponse(response) {
   hideTyping();
   let firstPart;
 
+  // Textos seguidos viram um balão só (em vez de vários balõezinhos)
+  const parts = [];
   response.parts.forEach((part) => {
+    const last = parts[parts.length - 1];
+    if (part.type === "text" && last?.type === "text") {
+      last.content += "\n\n" + part.content;
+    } else {
+      parts.push({ ...part });
+    }
+  });
+
+  parts.forEach((part) => {
     let element;
-    if (part.type === "text") {
+    if (part.type === "note") {
+      // aviso discreto (ex.: "usei a forja local")
+      element = document.createElement("div");
+      element.className = "msg-note";
+      element.textContent = part.content;
+      chatWin.appendChild(element);
+    } else if (part.type === "text") {
       element = addMsg(renderTextMarkdown(part.content), "bot", { html: true });
     } else if (part.type === "code") {
       element = addCodeBlock(part.content, part.lang || "text");
@@ -448,6 +497,7 @@ function quickAsk(topic) {
 // ════════════════════════════════════════════════════════════
 function clearChat() {
   chatWin.innerHTML = "";
+  resetConversation();
   pendingAnswer = null;
   jumpBtn.classList.remove("show");
   init();
@@ -474,7 +524,7 @@ function scrollDown(smooth = false) {
 // ════════════════════════════════════════════════════════════
 function init() {
   addMsg(
-    "⚒️ A forja está acesa, dev! Sou o ByteForge — aqui o código bruto vira arte.\nMe jogue qualquer dúvida de programação ou use os atalhos abaixo para começar!",
+    "⚒️ A forja está acesa, dev! Sou o ByteForge.\nAqui eu não entrego código pronto: explico a ideia, te faço uma pergunta e deixo uma lacuna pra você completar. Travou? Eu dou a próxima pista.\nMe conta sua dúvida, cola o exercício ou escolhe um atalho abaixo!",
     "bot",
   );
 }

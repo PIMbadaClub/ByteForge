@@ -363,6 +363,59 @@ body {
     margin: 0.22em 0;
 }
 
+.msg p:last-child,
+.msg ul:last-child,
+.msg ol:last-child {
+    margin-bottom: 0;
+}
+
+/* código inline: `assim` */
+.msg code {
+    font-family: 'Consolas', 'Courier New', monospace;
+    font-size: .88em;
+    background: rgba(255,140,42,.12);
+    border: 1px solid rgba(255,140,42,.2);
+    border-radius: 4px;
+    padding: 0 4px;
+}
+
+.user .msg code {
+    background: rgba(0,0,0,.15);
+    border-color: rgba(0,0,0,.2);
+}
+
+.msg blockquote {
+    border-left: 3px solid var(--primary);
+    padding-left: 10px;
+    margin: 0 0 0.8em;
+    color: var(--muted);
+}
+
+/* tabela markdown: rola de lado em vez de quebrar a bolha */
+.md-table {
+    overflow-x: auto;
+    margin: 0 0 0.8em;
+}
+
+.md-table table {
+    border-collapse: collapse;
+    font-size: 13px;
+    white-space: normal;
+}
+
+.md-table th,
+.md-table td {
+    border: 1px solid #3d3020;
+    padding: 5px 8px;
+    text-align: left;
+    vertical-align: top;
+}
+
+.md-table th {
+    background: #261c10;
+    color: var(--primary);
+}
+
 .msg-time {
     font-size: 10px;
     color: var(--primary); /* <-- ALTERE A COR AQUI (ex: #ffffff, #ffcc44 ou var(--text)) */
@@ -371,6 +424,16 @@ body {
 }
 
 .user .msg-time { text-align: right; }
+
+/* aviso discreto abaixo da resposta ("usei a forja local") */
+.msg-note {
+    align-self: flex-start;
+    font-size: 11px;
+    font-style: italic;
+    color: var(--muted);
+    opacity: .8;
+    margin-top: -4px;
+}
 
 /* ── CODE BLOCKS ──────────────────────────────────────────── */
 .code-block {
@@ -543,7 +606,7 @@ body {
 #mascote-wrap svg {
     overflow: visible;
     width: 120px;
-    height: 140px;
+    height: 116px;
 }
 
 #mascote-wrap:hover svg {
@@ -554,15 +617,15 @@ body {
 @keyframes hammer-strike {
     0%, 100% { transform: rotate(0deg); }
     10% { transform: rotate(15deg); }    /* Levanta pra pegar impulso */
-    22% { transform: rotate(-130deg); }  /* Bate no metal */
-    26% { transform: rotate(-110deg); }  /* Quique do martelo */
-    32% { transform: rotate(-130deg); }  /* Encosta de novo */
-    60% { transform: rotate(-130deg); }  /* Segura firmando a peça */
+    22% { transform: rotate(-120deg); }  /* Bate no metal */
+    26% { transform: rotate(-104deg); }  /* Quique do martelo */
+    32% { transform: rotate(-120deg); }  /* Encosta de novo */
+    60% { transform: rotate(-120deg); }  /* Segura firmando a peça */
     80% { transform: rotate(0deg); }     /* Volta a posição inicial */
 }
 
 #hammer-arm {
-    transform-origin: 64px 54px; /* Centro da articulação do ombro do robô */
+    transform-origin: 70px 76px; /* Ombro do ferreiro */
     animation: hammer-strike 2.5s infinite cubic-bezier(0.4, 0, 0.2, 1);
 }
 
@@ -584,13 +647,24 @@ body {
 }
 
 .spark {
-    transform-origin: 34px 72px; /* Ponto de origem do impacto */
+    transform-origin: 38px 82px; /* Ponto de origem do impacto */
     animation: spark-strike 2.5s infinite ease-out;
 }
 .spark.s1 { --tx: -24px; --ty: -18px; --rot: -45deg; }
 .spark.s2 { --tx: 22px;  --ty: -25px; --rot: 60deg; }
 .spark.s3 { --tx: -10px; --ty: -35px; --rot: 120deg; }
 .spark.s4 { --tx: 28px;  --ty: -12px; --rot: 90deg; }
+
+/* Símbolos de código flutuando em volta do mascote */
+@keyframes float-code {
+    0%, 100% { transform: translateY(0);    opacity: .55; }
+    50%      { transform: translateY(-4px); opacity: 1; }
+}
+
+.float-code { animation: float-code 3.2s ease-in-out infinite; }
+.float-code.f2 { animation-delay: .8s; }
+.float-code.f3 { animation-delay: 1.6s; }
+.float-code.f4 { animation-delay: 2.4s; }
 
 /* bounce ao clicar no mascote */
 @keyframes bounce-bot {
@@ -741,7 +815,7 @@ body {
     96%           { transform: scaleY(0.8); }
 }
 
-.eye       { animation: blink 4s ease-in-out infinite; transform-origin: center; }
+.eye       { animation: blink 4s ease-in-out infinite; transform-box: fill-box; transform-origin: center; }
 .eye.delay { animation-delay: .3s; }
 
 /* ── SCROLLBAR ────────────────────────────────────────────── */
@@ -772,12 +846,12 @@ body {
     }
 
     #mascote-wrap {
-        width: 72px;
+        width: 80px;
     }
 
     #mascote-wrap svg {
-        width: 72px;
-        height: 84px;
+        width: 80px;
+        height: 78px;
     }
 
     .header-info h1 {
@@ -853,12 +927,12 @@ body {
 }
 
 .short-viewport #mascote-wrap {
-    width: 40px;
+    width: 44px;
 }
 
 .short-viewport #mascote-wrap svg {
-    width: 40px;
-    height: 46px;
+    width: 44px;
+    height: 43px;
 }
 
 .short-viewport .status,

@@ -11,15 +11,18 @@ const brain = [
       "boa noite",
       "tudo",
     ],
-    text: "Olá, dev! Sou o ByteForge, seu assistente de programação.Posso ajudar com JavaScript, Python, Git, CSS, APIs, TypeScript, Docker e muito mais.\nO que vamos aprender hoje?",
+    text: "Olá, dev! Eu sou o ByteForge, sua forja de aprendizado em programação. Aqui eu não entrego código pronto: explico a ideia, faço uma pergunta e deixo você martelar a solução, passo a passo. Se travar, eu dou a próxima pista.",
+    pergunta: "Me conta: o que você está estudando agora ou qual exercício está tentando resolver? Escreve do seu jeito, que a gente começa por aí!",
   },
   {
     keys: ["quem", "você", "voce", "byteforge", "o que é", "o que voce"],
-    text: "Sou o ByteForge — um assistente de programação criado para ajudar devs.Fui treinado para responder dúvidas sobre código, linguagens, ferramentas e boas práticas.\nUse os chips abaixo ou escreva qualquer tópico de programação!",
+    text: "Sou o ByteForge, um assistente que **ensina** programação em vez de resolver por você. Meu método é simples: explico o conceito, faço uma pergunta, deixo uma lacuna para você completar e, se travar, dou uma pista. A ideia é usar a IA como ferramenta, sem substituir o seu raciocínio lógico.",
+    pergunta: "Qual assunto ou exercício está te dando trabalho hoje? Me conta o que você já tentou que eu te guio a partir daí!",
   },
   {
     keys: ["javascript", " js ", "js,", "var ", "const ", "let "],
-    text: "JavaScript é a linguagem da web — roda no browser e no servidor (Node.js).Veja os fundamentos básicos:",
+    text: "JavaScript é a linguagem que dá vida às páginas web, e hoje roda também no servidor com Node.js. Pense nas variáveis como caixas com etiqueta: `let` é uma caixa que você pode trocar o conteúdo, `const` é uma caixa lacrada. O código abaixo mostra variáveis, `if`, laço e função; é um exemplo para ler e experimentar.",
+    pergunta: "Desafio: complete para o laço contar de 0 a 9 → `for (let i = 0; i < ____; i++)`. E o que acontece se você tentar mudar o valor de `PI` depois? Testa no console e me diz o que apareceu.",
     code: `// Declaração de variáveis
 var   nome  = "Dev";      // escopo global (evite)
 let   idade = 20;         // mutável, escopo de bloco
@@ -49,7 +52,8 @@ const multiplicar = (a, b) => a * b;`,
   },
   {
     keys: ["python"],
-    text: "Python é fácil de aprender e muito poderoso — usado em IA, automação e backend.\nVeja os fundamentos básicos:",
+    text: "Python é famoso por ser legível: o código parece quase uma frase em inglês. Em vez de chaves, ele usa a **indentação** (o recuo) para saber o que está dentro de um `if` ou de um laço, como os tópicos de uma lista. O código abaixo é um exemplo para ler e experimentar.",
+    pergunta: "Desafio: complete para imprimir de 1 a 10 → `for i in range(____):`. O que acontece se você trocar o número? Me conta o que você tentou!",
     code: `# Variáveis (sem declaração de tipo)
 nome  = "Dev"
 idade = 20
@@ -82,7 +86,8 @@ print(somar(3, 4))  # 7`,
   },
   {
     keys: ["git", "commit", "branch", "merge", "rebase", "github"],
-    text: "Git — controla versões do código e facilita o trabalho em equipe.\nComandos básicos do dia a dia:",
+    text: "Git é como um álbum de fotos do seu projeto: cada `commit` é uma foto do código naquele momento, e você pode voltar a qualquer uma delas. O fluxo básico é: alterar arquivos, separar o que vai na foto (`git add`) e tirar a foto (`git commit`). Os comandos abaixo são um exemplo para ler e experimentar num projeto de teste.",
+    pergunta: "Pensa comigo: depois de editar um arquivo, qual comando vem antes do `git commit -m \"mensagem\"`? Complete → `git ____ .`. Testa numa pasta de teste e me diz o que o `git status` mostrou.",
     code: ` # Configuração inicial (apenas na primeira vez)
 git config --global user.name "Seu Nome"
 git config --global user.email "Seu Email"
@@ -114,7 +119,8 @@ git log --oneline             # ver histórico de commits`,
   },
   {
     keys: ["css", "estilo", "flexbox", "grid", "layout", "responsivo"],
-    text: "CSS — linguagem para estilizar páginas web.\nDo básico ao Flexbox:",
+    text: "CSS é a roupa da página: o HTML diz **o que** existe e o CSS diz **como** aparece. Todo elemento é uma caixa com conteúdo, `padding` (espaço de dentro), borda e `margin` (espaço de fora), e o Flexbox ajuda a alinhar essas caixas lado a lado. O código abaixo é um exemplo para ler e experimentar.",
+    pergunta: "Desafio: complete para centralizar os itens na horizontal dentro de um flex → `justify-content: ____;`. Qual a diferença visual entre aumentar o `margin` e o `padding`? Testa e me conta!",
     code: `/* Seletores básicos */
 h1          { color: blue; }          /* por tag    */
 .destaque   { font-weight: bold; }    /* por classe */
@@ -144,7 +150,8 @@ h1          { color: blue; }          /* por tag    */
   },
   {
     keys: ["api", "rest", "fetch", "axios", "http", "endpoint", "request"],
-    text: "API REST — forma de comunicar dois sistemas pela internet.\nExemplos básicos com fetch:",
+    text: "Uma API é como o garçom de um restaurante: você faz o pedido (requisição), ele leva até a cozinha (servidor) e traz o prato (resposta, geralmente em JSON). O `fetch` é a forma do JavaScript fazer esse pedido. O código abaixo é um exemplo para ler e experimentar.",
+    pergunta: "Pergunta: por que existe o `.then(res => res.json())` antes de usar os dados? Desafio: complete para enviar dados → `method: \"____\"`. Me conta o que você acha!",
     code: `// GET — buscar dados
 fetch("https://api.exemplo.com/usuarios")
     .then(res  => res.json())
@@ -170,7 +177,8 @@ async function buscarUsuarios() {
   },
   {
     keys: ["debug", "erro", "bug", "error", "problema", "fix", "console"],
-    text: "Debug — como encontrar e corrigir erros no código:\n\n• `console.log()` para ver valores em tempo real\n• `console.table()` para arrays e objetos\n• Breakpoints no DevTools (F12) — pausa a execução\n• Leia o stack trace: indica o arquivo e a linha do erro\n• Isole o problema: comente o código até o bug sumir\n• Use `typeof x` para ver o tipo de uma variável",
+    text: "Debugar é investigar como um detetive: em vez de chutar a causa do erro, você coleta pistas. O `console.log()` mostra o valor de uma variável naquele ponto, e o `try/catch` captura o erro para você ler a mensagem com calma. O código abaixo é um exemplo para ler e experimentar.",
+    pergunta: "Desafio: num código seu que deu erro, coloque um `console.log(____)` logo antes da linha que quebra, com a variável suspeita. O valor era o que você esperava? Testa e me diz o que apareceu.",
     code: `// Inspecionar valores
 let x = 42;
 console.log("x =", x);          // x = 42
@@ -199,7 +207,8 @@ function dobrar(n) {
   },
   {
     keys: ["node", "nodejs", "node.js", "npm", "express", "servidor"],
-    text: "Node.js — servidor HTTP básico com Express:",
+    text: "Node.js permite rodar JavaScript fora do navegador, e o Express facilita criar um servidor web. Pense no servidor como um balcão de atendimento: cada **rota** é um guichê que responde a um tipo de pedido, como `GET /usuarios`. O código abaixo é um exemplo para ler e experimentar.",
+    pergunta: "Desafio: complete para criar uma rota que responde \"pong\" → `app.get(\"/____\", (req, res) => res.send(\"pong\"))`. Depois abre no navegador e me diz o que apareceu!",
     code: `const express = require("express");
 const app = express();
 
@@ -237,7 +246,8 @@ app.listen(3000, () => console.log("Servidor em :3000"));`,
       "select",
       "insert",
     ],
-    text: "SQL — linguagem para criar e manipular bancos de dados.\nOs 4 comandos essenciais (CRUD):",
+    text: "SQL é a língua para conversar com bancos de dados, que funcionam como planilhas bem organizadas (tabelas com linhas e colunas). Os 4 comandos essenciais formam o CRUD: criar (`INSERT`), ler (`SELECT`), atualizar (`UPDATE`) e apagar (`DELETE`). O código abaixo é um exemplo para ler e experimentar.",
+    pergunta: "Desafio: complete para listar só os alunos com nota maior que 7 → `SELECT * FROM alunos WHERE ____;`. E o que aconteceria num `DELETE` sem `WHERE`? Me conta o que você acha!",
     code: `-- Criar tabela
 CREATE TABLE alunos (
     id    INT PRIMARY KEY AUTO_INCREMENT,
@@ -262,7 +272,8 @@ DELETE FROM alunos WHERE id = 1;`,
   },
   {
     keys: ["typescript", "ts", "tipagem", "type", "interface", "generics"],
-    text: "TypeScript adiciona tipos ao JavaScript, ajudando a pegar erros antes de rodar o código:",
+    text: "TypeScript é JavaScript com etiquetas de tipo: você avisa que uma variável guarda número, texto ou booleano, e o editor reclama antes de você rodar se algo não bater. É como um molde de ferreiro: só encaixa a peça do formato certo. O código abaixo é um exemplo para ler e experimentar.",
+    pergunta: "Desafio: complete a tipagem → `let cidade: ____ = \"Recife\";`. O que o editor diz se você fizer `idade = \"vinte\"`? Testa e me diz o que apareceu.",
     code: `// Tipos básicos
 let nome:   string  = "Dev";
 let idade:  number  = 20;
@@ -296,7 +307,8 @@ console.log(saudar(dev)); // "Olá, Ana!"`,
   },
   {
     keys: ["react", "componente", "usestate", "useeffect", "hooks", "jsx"],
-    text: "React — componente funcional com hooks modernos:",
+    text: "No React, a tela é montada com **componentes**, peças reutilizáveis como blocos de Lego. O `useState` guarda informações que, quando mudam, fazem o componente se redesenhar, e o `useEffect` executa algo quando o componente aparece ou quando um valor muda. O código abaixo é um exemplo para ler e experimentar.",
+    pergunta: "Pergunta: por que o `userId` aparece na lista de dependências do `useEffect`? Desafio: complete → `const [contador, setContador] = useState(____);`. Me conta o que você tentou!",
     code: `import { useState, useEffect, useCallback } from "react";
 
 interface Props {
@@ -323,7 +335,8 @@ function PerfilUsuario({ userId }: Props) {
   },
   {
     keys: ["async", "promise", "await", "assincrono", "assíncrono", "callback"],
-    text: "JavaScript assíncrono — do callback hell ao async/await:",
+    text: "Código assíncrono é como pedir uma pizza: você não fica parado na porta esperando, continua fazendo outras coisas até ela chegar. Uma `Promise` é a promessa de que o resultado vem depois, e o `async/await` deixa esse código com cara de passo a passo. O código abaixo é um exemplo para ler e experimentar.",
+    pergunta: "Desafio: complete → `const user = ____ buscarUsuario(id);`. O que você acha que acontece se esquecer essa palavra? Testa e me conta!",
     code: `// Promise encadeada
 buscarUsuario(id)
     .then(user => buscarPosts(user.id))
@@ -349,7 +362,8 @@ const resultado = await Promise.race([fetchA(), timeout(5000)]);`,
   },
   {
     keys: ["poo", "oop", "classe", "herança", "objeto", "orientado", "solid"],
-    text: "POO em JavaScript — classes ES6+ com encapsulamento:",
+    text: "Programação Orientada a Objetos organiza o código em **classes**, que são como a planta de uma casa, e **objetos**, que são as casas construídas a partir dela. Com herança (`extends`), uma classe aproveita o que a outra já tem, como um `Cachorro` que já é um `Animal`. O código abaixo é um exemplo para ler e experimentar.",
+    pergunta: "Desafio: crie uma classe `Gato` que herda de `Animal` → `class Gato ____ Animal { ... }` e sobrescreva `falar()`. O que aparece quando você chama `new Gato(\"Mimi\").falar()`? Me conta!",
     code: `class Animal {
     #nome; // campo privado (ES2022)
 
@@ -381,7 +395,8 @@ console.log(rex.falar()); // Rex late: Au au!`,
   },
   {
     keys: ["array", "lista", "map", "filter", "reduce", "find"],
-    text: "Arrays em JS — métodos funcionais essenciais:",
+    text: "Um array é uma fila de gavetas numeradas, começando do zero. Os métodos `map`, `filter` e `reduce` são como estações de uma linha de produção: `map` transforma cada item, `filter` separa os que passam numa regra e `reduce` junta tudo num resultado só. O código abaixo é um exemplo para ler e experimentar.",
+    pergunta: "Desafio: complete para pegar só quem ganha mais de 5000 → `devs.filter(d => d.salario ____ 5000)`. Quantos nomes sobraram? Testa e me diz o que apareceu.",
     code: `const devs = [
     { nome: "Ana",  nivel: "senior", salario: 12000 },
     { nome: "Bob",  nivel: "junior", salario: 4000  },
@@ -406,7 +421,8 @@ const ordenados = [...devs].sort((a, b) => b.salario - a.salario);`,
   },
   {
     keys: ["docker", "container", "compose", "dockerfile", "imagem", "image"],
-    text: "Docker empacota sua aplicação em containers — roda igual em qualquer máquina.\nDockerfile e comandos básicos:",
+    text: "Docker é como uma marmita fechada: você coloca a aplicação junto com tudo que ela precisa (versão do Node, dependências), e ela roda igual em qualquer máquina. O `Dockerfile` é a receita, a imagem é a marmita pronta e o container é a marmita aberta, rodando. O código abaixo é um exemplo para ler e experimentar.",
+    pergunta: "Pergunta: por que o `COPY package*.json` vem **antes** do `COPY . .`? Pense no que o Docker reaproveita entre um build e outro. Me conta seu palpite!",
     code: `# Dockerfile básico (Node.js)
 FROM node:20-alpine
 WORKDIR /app
@@ -426,7 +442,8 @@ docker images                      # listar imagens`,
   },
   {
     keys: ["regex", "expressão regular", "regexp", "pattern"],
-    text: "Regex — expressões regulares para validação e parsing:",
+    text: "Uma expressão regular (regex) é um molde de busca: em vez de procurar um texto exato, você descreve o **formato** do que quer, como \"algo + @ + domínio\". É ótima para validar e-mails, senhas ou extrair pedaços de um texto. O código abaixo é um exemplo para ler e experimentar.",
+    pergunta: "Desafio: complete a regex que aceita só números → `/^____+$/`. Teste com \"123\" e \"12a\" usando `.test()` e me diz o que apareceu.",
     code: `// Validar e-mail
 const emailRgx = /^[\\w.+-]+@[\\w-]+\\.[a-z]{2,}$/i;
 console.log(emailRgx.test("dev@email.com")); // true
@@ -447,7 +464,8 @@ const slug = "Meu Título Incrível!"
   },
   {
     keys: ["vscode", "vs code", "editor", "atalho", "shortcut", "extensão"],
-    text: "VS Code — atalhos que aumentam sua produtividade:\n\n• `Ctrl+P` — abrir arquivo por nome\n• `Ctrl+Shift+P` — paleta de comandos\n• `Alt+Up/Down` — mover linha\n• `Ctrl+D` — selecionar próxima ocorrência\n• `Ctrl+/` — comentar/descomentar\n• `F2` — renomear símbolo em todo projeto\n• `Ctrl+Shift+F` — buscar em todos arquivos\n• `Ctrl+`` ` — abrir terminal integrado\n• `Ctrl+Z` — desfazer | `Ctrl+Shift+Z` — refazer\n\nExtensões essenciais: ESLint, Prettier, GitLens, REST Client, Thunder Client",
+    text: "Atalhos do editor são as ferramentas que ficam ao alcance da mão do ferreiro: economizam tempo e mantêm você focado no raciocínio. Comece por poucos: `Ctrl+P` abre arquivo pelo nome, `Ctrl+Shift+P` abre a paleta de comandos, `Alt+↑/↓` move a linha e `Ctrl+D` seleciona a próxima ocorrência da palavra. Vale mais usar três atalhos todo dia do que decorar trinta.",
+    pergunta: "Mini-desafio: escolha **um** atalho desta lista e use durante a próxima hora de estudo. Qual você escolheu e o que achou?",
   },
   {
     keys: [
@@ -460,7 +478,8 @@ const slug = "Meu Título Incrível!"
       "salario",
       "mercado",
     ],
-    text: "Dicas de carreira para devs:\n\n• Portfólio no GitHub com projetos reais e READMEs caprichados\n• Inglês técnico é pré-requisito — documentações, Stack Overflow, podcasts\n• Especialização importa: Front, Back, Full Stack, Mobile, DevOps, Data\n• Open source abre portas — contribua com projetos que usa\n• LinkedIn ativo com conquistas concretas (evite clichês)\n• Algoritmos e estruturas de dados para entrevistas (LeetCode, HackerRank)\n• Soft skills: comunicação escrita, code review, estimativas realistas",
+    text: "Carreira em programação se constrói como uma espada: camada por camada, com prática constante. O que mais pesa no começo é mostrar projetos reais no GitHub com um bom README, ler documentação (inglês técnico ajuda muito) e saber explicar o **porquê** das suas decisões. Entender o que você escreveu vale mais do que copiar soluções prontas.",
+    pergunta: "Me conta: qual projeto pequeno você poderia construir este mês para colocar no portfólio? Pode ser simples, como uma lista de tarefas!",
   },
   {
     keys: [
@@ -471,7 +490,8 @@ const slug = "Meu Título Incrível!"
       "fatorial",
       "fibonacci",
     ],
-    text: "Recursão — função que chama a si mesma para problemas divisíveis:",
+    text: "Recursão é quando uma função chama a si mesma para resolver uma versão menor do problema, como bonecas russas: você abre uma e encontra outra menor dentro, até chegar na última. Essa última é o **caso base**, e sem ele a função nunca para. O código abaixo é um exemplo para ler e experimentar.",
+    pergunta: "Desafio: faça na mão `fatorial(4)` seguindo as chamadas: 4 * fatorial(3) = ...? O que aconteceria se você apagasse a linha `if (n <= 1) return 1;`? Testa e me conta!",
     code: `// Fatorial
 function fatorial(n) {
     if (n <= 1) return 1;           // caso base (obrigatório!)
@@ -505,7 +525,8 @@ function flat(arr) {
       "dom",
       "acessib",
     ],
-    text: "HTML semântico — estrutura acessível e bem organizada:",
+    text: "HTML semântico é usar a tag que **diz o que o conteúdo é**: `<header>` para cabeçalho, `<nav>` para menu, `<main>` para o conteúdo principal. É como etiquetar as caixas de uma mudança: o navegador, o Google e os leitores de tela entendem melhor a página. O código abaixo é um exemplo para ler e experimentar.",
+    pergunta: "Desafio: qual tag você usaria para o rodapé da página? Complete → `<____>© 2026 Meu Site</____>`. Me conta o que você tentou!",
     code: `<!DOCTYPE html>
 <html lang="pt-br">
 <head>
@@ -536,7 +557,8 @@ function flat(arr) {
   // ── JavaScript avançado ──────────────────────────────────
   {
     keys: ["closure", "fechamento", "escopo", "scope"],
-    text: "Closures — funções que 'lembram' o escopo em que foram criadas:",
+    text: "Closure é uma função que \"lembra\" das variáveis do lugar onde foi criada, mesmo depois que esse lugar já terminou de executar. É como uma mochila: a função leva consigo as variáveis de que precisa. O código abaixo é um exemplo para ler e experimentar.",
+    pergunta: "Desafio: crie dois contadores, `a = criarContador()` e `b = criarContador(10)`, e chame `a.incrementar()` duas vezes. Quanto vale `b.valor()`? Por quê? Testa e me diz o que apareceu.",
     code: `// Contador com closure — estado privado
 function criarContador(inicio = 0) {
     let count = inicio; // variável capturada
@@ -570,7 +592,8 @@ console.log(triplicar(5)); // 15`,
       "microtask",
       "macrotask",
     ],
-    text: "Event Loop — como o JS executa código assíncrono:\n\n1. Call Stack — executa código síncrono (LIFO)\n2. Web APIs — gerencia timers, fetch, eventos\n3. Callback Queue (macrotasks) — setTimeout, setInterval\n4. Microtask Queue — Promises, queueMicrotask (prioridade maior)\n\nOrdem de execução: sync → microtasks → macrotasks",
+    text: "O JavaScript faz uma coisa de cada vez, como um cozinheiro só. O **event loop** é a regra que decide a ordem: primeiro termina o código normal (síncrono), depois as promessas (microtasks) e só então os timers como `setTimeout` (macrotasks). O código abaixo é um exemplo para ler e experimentar.",
+    pergunta: "Desafio: antes de rodar, escreva a ordem que você acha que vai aparecer: ____, ____, ____, ____. Depois roda e compara. Acertou? Me conta!",
     code: `console.log("1");                      // sync
 
 setTimeout(() => console.log("2"), 0); // macrotask
@@ -585,7 +608,8 @@ console.log("4");                      // sync
   },
   {
     keys: ["spread", "rest", "operador", "..."],
-    text: "Spread (...) e Rest — operadores essenciais do JS moderno:",
+    text: "Os três pontinhos `...` têm dois papéis. No **spread**, eles espalham os itens de um array ou objeto, como despejar uma caixa sobre a mesa; no **rest**, eles juntam vários argumentos numa caixa só. O código abaixo é um exemplo para ler e experimentar.",
+    pergunta: "Desafio: complete para juntar dois arrays → `const todos = [____a, ____b];`. E qual a diferença entre `const c = a` e `const c = [...a]` se você alterar `c`? Testa e me diz o que apareceu.",
     code: `// SPREAD — espalha elementos
 const a = [1, 2, 3];
 const b = [...a, 4, 5];         // [1,2,3,4,5]
@@ -618,7 +642,8 @@ const [primeiro, segundo, ...outros] = [1, 2, 3, 4, 5];
       "commonjs",
       "require",
     ],
-    text: "Módulos em JavaScript — ESM (moderno) vs CommonJS:",
+    text: "Módulos são como gavetas organizadas: cada arquivo guarda uma parte do código e escolhe o que deixa sair com `export`, e outro arquivo pega com `import`. Assim o projeto não vira um arquivo gigante e bagunçado. O código abaixo é um exemplo para ler e experimentar.",
+    pergunta: "Pergunta: qual a diferença entre `import Calc from` e `import { PI } from`? Desafio: complete → `____ function subtrair(a, b) { return a - b; }`. Me conta o que você tentou!",
     code: `// ── ESM (navegador e Node 12+) ──
 // utils.js
 export const PI = 3.14159;
@@ -642,7 +667,8 @@ const modulo = await import("./pesado.js");`,
   },
   {
     keys: ["try catch", "try/catch", "erro", "exception", "throw", "finally"],
-    text: "Tratamento de erros em JavaScript:",
+    text: "Tratar erros é como ter uma rede de segurança no trapézio: o `try` tenta o movimento arriscado, o `catch` segura se der errado e o `finally` roda sempre, aconteça o que acontecer. Assim o programa não cai inteiro por causa de um problema. O código abaixo é um exemplo para ler e experimentar.",
+    pergunta: "Desafio: complete para lançar um erro quando a idade for negativa → `if (idade < 0) ____ new Error(\"Idade inválida\");`. O que o `catch` recebe? Testa e me conta!",
     code: `// Erro customizado
 class ApiError extends Error {
     constructor(message, status) {
@@ -675,7 +701,8 @@ async function buscar(url) {
   },
   {
     keys: ["localstorage", "sessionstorage", "storage", "armazenamento local"],
-    text: "Web Storage — persistir dados no browser:",
+    text: "O `localStorage` é uma gavetinha do navegador onde o site guarda informações que continuam lá mesmo depois de fechar a aba; o `sessionStorage` some ao fechar a aba. Detalhe importante: essa gaveta só guarda **texto**, por isso objetos passam por `JSON.stringify`. O código abaixo é um exemplo para ler e experimentar.",
+    pergunta: "Desafio: salve seu nome com `localStorage.setItem(\"nome\", ____)`, recarregue a página e leia de volta. E o que acontece se salvar um objeto sem `JSON.stringify`? Testa e me diz o que apareceu.",
     code: `// LocalStorage — persiste após fechar o browser
 localStorage.setItem("token", "abc123");
 const token = localStorage.getItem("token");
@@ -703,7 +730,8 @@ function getStorage(key, fallback = null) {
   },
   {
     keys: ["dom", "document", "queryselector", "getelementbyid", "manipulacao"],
-    text: "Manipulação de DOM — criar, modificar e remover elementos:",
+    text: "O DOM é a árvore que o navegador monta a partir do HTML, e o JavaScript pode mexer nos galhos dela: achar elementos, criar novos, mudar textos e classes. É como reorganizar os móveis de uma sala que já está montada. O código abaixo é um exemplo para ler e experimentar.",
+    pergunta: "Desafio: complete para trocar o texto de um título → `document.querySelector(\"h1\").____ = \"Olá!\";`. Testa no console de qualquer página e me diz o que apareceu.",
     code: `// Selecionar
 const btn  = document.querySelector("#meu-btn");
 const itens = document.querySelectorAll(".item");
@@ -739,7 +767,8 @@ document.querySelector("#lista").appendChild(clone);`,
       "bubbling",
       "delegation",
     ],
-    text: "Eventos no DOM — listeners e delegação de eventos:",
+    text: "Eventos são os avisos que a página dá quando algo acontece: um clique, uma tecla, um envio de formulário. O `addEventListener` é como deixar alguém de plantão esperando aquele aviso para executar uma função. O código abaixo é um exemplo para ler e experimentar.",
+    pergunta: "Desafio: complete para reagir a um clique → `btn.addEventListener(\"____\", () => alert(\"Clicou!\"));`. O que o `e.target` mostra quando você clica? Testa e me conta!",
     code: `// Adicionar e remover listener
 const handler = (e) => console.log(e.target);
 btn.addEventListener("click", handler);
@@ -772,7 +801,8 @@ form.addEventListener("submit", (e) => {
       "json.parse",
       "json.stringify",
     ],
-    text: "JSON — serializar e desserializar dados:",
+    text: "JSON é um formato de texto para trocar dados entre sistemas, como uma carta com formulário padrão que todo mundo sabe ler. `JSON.stringify` transforma um objeto em texto para enviar ou salvar, e `JSON.parse` faz o caminho de volta. O código abaixo é um exemplo para ler e experimentar.",
+    pergunta: "Desafio: complete para transformar o texto de volta em objeto → `const obj = JSON.____(texto);`. O que acontece se o texto tiver uma vírgula sobrando no final? Testa e me diz o que apareceu.",
     code: `const obj = { nome: "Ana", ativo: true, score: 9.5 };
 
 // Objeto → string
@@ -800,7 +830,8 @@ const clone = JSON.parse(JSON.stringify(obj));`,
   },
   {
     keys: ["date", "data", "hora", "datetime", "new date", "datas"],
-    text: "Datas e horas em JavaScript:",
+    text: "Uma data em JavaScript é um objeto `Date` que guarda um instante no tempo. Para mostrar no formato brasileiro, use `toLocaleDateString(\"pt-BR\")`, como pedir para um tradutor formatar o calendário para você. O código abaixo é um exemplo para ler e experimentar.",
+    pergunta: "Desafio: crie a data do seu aniversário → `new Date(2026, ____, 15)`. Cuidado: o mês começa em 0! Qual número é dezembro? Testa e me conta o que apareceu.",
     code: `const agora = new Date();
 
 // Formatar
@@ -827,7 +858,8 @@ agora.toISOString(); // "2026-04-28T17:30:00.000Z"`,
   },
   {
     keys: ["map", "set", "weakmap", "weakset", "coleção", "collection"],
-    text: "Map e Set — coleções modernas do JavaScript:",
+    text: "`Map` é como um fichário em que a etiqueta (chave) pode ser de qualquer tipo, e `Set` é uma lista que não aceita repetidos, como uma lista de convidados sem nomes duplicados. São ótimos quando objetos e arrays comuns começam a ficar desajeitados. O código abaixo é um exemplo para ler e experimentar.",
+    pergunta: "Desafio: remova os repetidos de `[1, 2, 2, 3, 3, 3]` → `const unicos = [...new ____(nums)];`. Quantos itens sobraram? Testa e me diz!",
     code: `// Map — chave pode ser qualquer tipo
 const mapa = new Map();
 mapa.set("nome", "Ana");
@@ -855,7 +887,8 @@ const unico = [...new Set([1,1,2,3,3])]; // [1,2,3]`,
   },
   {
     keys: ["generator", "function*", "yield", "iterador", "iterator"],
-    text: "Generators — funções que pausam e retomam execução:",
+    text: "Um generator é uma função que pode pausar no meio e continuar depois, como um livro com marcador de página. Cada `yield` entrega um valor e para ali; o próximo `.next()` continua de onde parou. O código abaixo é um exemplo para ler e experimentar.",
+    pergunta: "Desafio: chame `gen.next().value` três vezes seguidas. Quais valores aparecem: ____, ____, ____? Por que o `while (true)` não trava o programa? Me conta o que você acha!",
     code: `// Generator básico
 function* contador(inicio = 0) {
     while (true) {
@@ -893,7 +926,8 @@ function* paginar(itens, por = 10) {
       "freeze",
       "seal",
     ],
-    text: "Object — métodos utilitários essenciais:",
+    text: "Os métodos de `Object` são lentes para enxergar um objeto de jeitos diferentes: só as chaves (`keys`), só os valores (`values`) ou os pares chave-valor (`entries`). Com isso você consegue percorrer e transformar objetos como se fossem listas. O código abaixo é um exemplo para ler e experimentar.",
+    pergunta: "Desafio: complete para contar quantas propriedades o `user` tem → `Object.____(user).length`. Testa e me diz o número que apareceu.",
     code: `const user = { id: 1, nome: "Ana", email: "ana@email.com" };
 
 Object.keys(user);    // ["id", "nome", "email"]
@@ -931,7 +965,8 @@ Object.hasOwn(user, "nome");       // true (apenas própria)`,
       "split",
       "includes",
     ],
-    text: "String — métodos mais usados no dia a dia:",
+    text: "Uma string é um texto, e os métodos dela são como ferramentas de uma bancada: `trim` lixa os espaços das pontas, `toUpperCase` deixa tudo maiúsculo e `includes` procura um pedaço. Importante: eles não mudam o texto original, devolvem um novo. O código abaixo é um exemplo para ler e experimentar.",
+    pergunta: "Desafio: complete para trocar \"Dev\" por \"Aluno\" → `str.____(\"Dev\", \"Aluno\")`. Depois imprima `str` de novo: ela mudou? Testa e me conta!",
     code: `const str = "  Olá, Desenvolvedor!  ";
 
 str.trim();            // "Olá, Desenvolvedor!"
@@ -965,7 +1000,8 @@ str.replace(/\s+/g, " ").trim();   // normalizar espaços
       "__proto__",
       "herança prototípica",
     ],
-    text: "Prototype chain — como a herança funciona sob o capô em JS:",
+    text: "Em JavaScript, todo objeto tem um \"pai\" escondido chamado **protótipo**. Quando você pede algo que o objeto não tem, ele pergunta ao pai, depois ao avô, e assim por diante: é a cadeia de protótipos, e é assim que a herança funciona por baixo das classes. O código abaixo é um exemplo para ler e experimentar.",
+    pergunta: "Desafio: adicione um método novo → `Animal.prototype.____ = function() { return this.nome + \" dorme.\"; }`. O `gato` que já existia ganha esse método? Testa e me diz o que apareceu.",
     code: `// Toda função tem .prototype
 function Animal(nome) { this.nome = nome; }
 Animal.prototype.falar = function() {
@@ -1003,7 +1039,8 @@ Array.prototype.ultimo = function() { return this[this.length - 1]; };`,
       "@keyframes",
       "transition",
     ],
-    text: "CSS Animations vs Transitions:",
+    text: "`transition` é a passagem suave de um estado para outro, como uma porta que abre devagar quando alguém passa (precisa de um gatilho, como o `:hover`). `@keyframes` é uma coreografia completa que roda sozinha, quadro a quadro. O código abaixo é um exemplo para ler e experimentar.",
+    pergunta: "Desafio: mude a duração da transition para ficar bem lenta → `transition: background ____s ease;`. Que diferença você sentiu no hover? Me conta!",
     code: `/* Transition — do estado A ao B (precisa de trigger) */
 .btn {
     background: #58a6ff;
@@ -1035,7 +1072,8 @@ Array.prototype.ultimo = function() { return this[this.length - 1]; };`,
   },
   {
     keys: ["media query", "responsivo", "mobile", "breakpoint", "@media"],
-    text: "Media Queries — design responsivo sem frameworks:",
+    text: "Media queries são regras de CSS que só valem a partir de certo tamanho de tela, como roupas que se ajustam ao corpo. No **mobile-first**, você escreve o estilo do celular primeiro e vai acrescentando ajustes para telas maiores. O código abaixo é um exemplo para ler e experimentar.",
+    pergunta: "Desafio: complete para valer só em telas a partir de 1024px → `@media (min-width: ____px) { ... }`. Redimensione a janela e me diz em que ponto o layout mudou!",
     code: `/* Mobile-first (recomendado) */
 .container { padding: 16px; }
 
@@ -1073,7 +1111,8 @@ Array.prototype.ultimo = function() { return this[this.length - 1]; };`,
       ":nth-child",
       "seletor",
     ],
-    text: "Pseudo-elementos e pseudo-classes CSS:",
+    text: "Pseudo-classes como `:hover` e `:focus` descrevem um **estado** do elemento (o mouse em cima, o campo selecionado). Pseudo-elementos como `::before` e `::after` criam partes \"virtuais\" antes ou depois do conteúdo, sem mexer no HTML. O código abaixo é um exemplo para ler e experimentar.",
+    pergunta: "Desafio: complete para colocar uma estrela antes de cada título → `h2::before { content: \"____\"; }`. O que acontece se você apagar a linha do `content`? Testa e me conta!",
     code: `/* Pseudo-elementos — partes virtuais do elemento */
 .btn::before {
     content: "→ ";
@@ -1112,7 +1151,8 @@ a:visited           { color: purple; }
       "z-index",
       "posicionamento",
     ],
-    text: "CSS Position — guia de posicionamento:",
+    text: "`position` decide como um elemento se posiciona. `relative` empurra o elemento sem tirá-lo do lugar dele, `absolute` o tira do fluxo e prende no pai mais próximo que seja `relative`, `fixed` gruda na tela e `sticky` gruda só quando você rola até ele. O código abaixo é um exemplo para ler e experimentar.",
+    pergunta: "Pergunta: o que acontece com o `.badge` se você apagar o `position: relative` do `.pai`? Arrisque um palpite, testa e me diz o que apareceu.",
     code: `/* static (padrão) — fluxo normal, top/left não funcionam */
 
 /* relative — move sem sair do fluxo; cria contexto p/ absolute */
@@ -1148,7 +1188,8 @@ a:visited           { color: purple; }
       "!important",
       "css priority",
     ],
-    text: 'Especificidade CSS — quem vence o conflito de regras:\n\n**Ordem crescente de peso:**\n• Elemento/pseudo-elemento: `p`, `::before` → (0,0,1)\n• Classe/atributo/pseudo-class: `.card`, `:hover` → (0,1,0)\n• ID: `#header` → (1,0,0)\n• Inline style: `style="..."` → (1,0,0,0)\n• `!important` → bate tudo (use com parcimônia)\n\n**Dica:** Quanto mais específico o seletor, mais difícil de sobrescrever. Prefira classes a IDs no CSS.',
+    text: "Quando duas regras de CSS brigam pelo mesmo elemento, vence a mais **específica**, como numa hierarquia: estilo inline vence ID, ID vence classe e classe vence tag. O `!important` passa por cima de tudo, por isso é melhor guardá-lo para emergências. Prefira classes, que são fáceis de sobrescrever. O código abaixo é um exemplo para ler e experimentar.",
+    pergunta: "Desafio: se um `<p class=\"texto\">` recebe `p { color: blue }` e `.texto { color: red }`, qual cor aparece: ____? E se a regra `p` vier depois no arquivo, muda algo? Testa e me conta!",
     code: `/* Especificidade: (0,0,1) */
 p { color: blue; }
 
@@ -1177,7 +1218,8 @@ p { color: purple !important; } /* evite se possível */
       "--cor",
       "var(",
     ],
-    text: "CSS Custom Properties (variáveis CSS) — theming sem pré-processador:",
+    text: "Variáveis CSS são como a paleta de tintas de um pintor: você define a cor uma vez (`--cor-primaria`) e usa em vários lugares com `var()`. Para mudar o tema inteiro, basta trocar o valor num lugar só. O código abaixo é um exemplo para ler e experimentar.",
+    pergunta: "Desafio: complete para usar a variável → `color: ____(--cor-primaria);`. Depois troque o valor no `:root` e veja quantos elementos mudaram juntos. Me conta o que apareceu!",
     code: `/* Definir no :root (escopo global) */
 :root {
     --cor-primaria:  #58a6ff;
@@ -1211,7 +1253,8 @@ color: var(--cor-texto, #ffffff);
   // ── Python avançado ──────────────────────────────────────
   {
     keys: ["decorador", "decorator", "@", "wrapper", "functools"],
-    text: "Decorators em Python — modificar funções sem alterá-las:",
+    text: "Um decorator é uma \"embalagem\" para uma função: ele adiciona um comportamento antes ou depois (medir tempo, registrar log) sem você mexer no código da função original. É como colocar uma capa num livro: o conteúdo continua o mesmo. O código abaixo é um exemplo para ler e experimentar.",
+    pergunta: "Desafio: aplique o decorator numa função sua → `____medir_tempo` logo acima do `def`. O que aparece quando você chama a função? Testa e me diz!",
     code: `import time
 from functools import wraps
 
@@ -1252,7 +1295,8 @@ class Circulo:
       "requirements",
       "poetry",
     ],
-    text: "Ambiente virtual Python — isolar dependências por projeto:",
+    text: "Um ambiente virtual é uma caixa de ferramentas separada para cada projeto, para que as bibliotecas de um não briguem com as de outro. O `requirements.txt` é a lista de ferramentas da caixa, para que outra pessoa monte a mesma em segundos. Os comandos abaixo são um exemplo para ler e experimentar.",
+    pergunta: "Desafio: complete para salvar as dependências do projeto → `pip freeze > ____`. Por que é melhor ativar o venv **antes** do `pip install`? Me conta o que você acha!",
     code: `# Criar ambiente virtual
 python -m venv .venv
 
@@ -1289,7 +1333,8 @@ poetry add --group dev pytest black
       "io",
       "leitura de arquivo",
     ],
-    text: "Manipulação de arquivos em Python:",
+    text: "Abrir um arquivo em Python é como pegar um livro da estante: você escolhe o modo (`\"r\"` ler, `\"w\"` escrever do zero, `\"a\"` acrescentar no fim). O `with` garante que o livro volte para a estante, ou seja, que o arquivo seja fechado mesmo se der erro. O código abaixo é um exemplo para ler e experimentar.",
+    pergunta: "Desafio: complete para adicionar uma linha sem apagar o que já existe → `open(\"log.txt\", \"____\")`. O que acontece se você usar `\"w\"` no lugar? Testa e me conta!",
     code: `# Ler arquivo texto
 with open("dados.txt", "r", encoding="utf-8") as f:
     conteudo = f.read()       # tudo de uma vez
@@ -1327,7 +1372,8 @@ texto = p.read_text(encoding="utf-8")`,
       "filter python",
       "funcional python",
     ],
-    text: "Funções lambda e programação funcional em Python:",
+    text: "Uma `lambda` é uma função pequenininha, de uma linha só, sem nome, ótima para usar ali mesmo, como um bilhete rápido em vez de uma carta. Ela brilha junto com `map`, `filter` e `sorted`, quando você precisa de uma regra curta. O código abaixo é um exemplo para ler e experimentar.",
+    pergunta: "Desafio: complete para ordenar as pessoas pelo nome → `sorted(pessoas, key=lambda p: p[\"____\"])`. Testa e me diz qual nome veio primeiro!",
     code: `# Lambda — função anônima de uma linha
 dobrar = lambda x: x * 2
 somar  = lambda a, b: a + b
@@ -1360,7 +1406,8 @@ produto = reduce(lambda acc, x: acc*x, nums) # 24`,
       "raise",
       "finally python",
     ],
-    text: "Tratamento de exceções em Python:",
+    text: "Exceções em Python são os alarmes do programa. Com `try/except` você diz: \"tente isso e, se tocar tal alarme, faça aquilo\", tratando cada tipo de erro do jeito certo. O `finally` roda sempre, e o `raise` dispara um alarme de propósito. O código abaixo é um exemplo para ler e experimentar.",
+    pergunta: "Desafio: rode o código digitando `0` e depois `abc`. Qual `except` foi acionado em cada caso? Complete → `except ____:` para o caso da divisão. Me conta o que apareceu!",
     code: `# Capturar exceções específicas
 try:
     resultado = int(input("Digite um número: "))
@@ -1396,7 +1443,8 @@ class SaldoInsuficienteError(Exception):
       "herança python",
       "método",
     ],
-    text: "Classes em Python — POO completa:",
+    text: "Em Python, uma classe é a forma (o molde) e cada objeto é uma peça saída dela. O `self` é a própria peça falando de si mesma, e o `@dataclass` poupa você de escrever o `__init__` na mão para classes que só guardam dados. O código abaixo é um exemplo para ler e experimentar.",
+    pergunta: "Desafio: crie um produto → `p = Produto(\"Caneca\", ____)` e imprima `p`. O que o `@dataclass` gerou automaticamente para você? Testa e me diz!",
     code: `from dataclasses import dataclass, field
 from typing import ClassVar
 
@@ -1431,7 +1479,8 @@ print(p.preco_com_iva) # 4305.0`,
   // ── Git avançado ─────────────────────────────────────────
   {
     keys: ["git stash", "stash", "guardar alterações"],
-    text: "Git Stash — guardar trabalho em progresso temporariamente:",
+    text: "O `git stash` é uma gaveta temporária: você guarda o trabalho pela metade, deixa a mesa limpa para resolver outra coisa (como trocar de branch) e depois pega tudo de volta. Os comandos abaixo são um exemplo para ler e experimentar num repositório de teste.",
+    pergunta: "Desafio: altere um arquivo, rode `git stash` e depois `git status`. A alteração sumiu? Qual comando traz de volta → `git stash ____`? Me conta o que você tentou!",
     code: `# Salvar estado atual (modificações não commitadas)
 git stash              # guarda tudo
 git stash push -m "WIP: login form"  # com nome
@@ -1458,7 +1507,8 @@ git stash clear  # limpa todos`,
   },
   {
     keys: ["git reset", "git revert", "desfazer commit", "undo commit"],
-    text: "Desfazer commits em Git — com segurança:",
+    text: "Desfazer no Git tem dois estilos. O `revert` cria um novo commit que desfaz o anterior, como uma errata num jornal (seguro em código compartilhado); o `reset` volta o ponteiro no tempo, como arrancar páginas do caderno (cuidado, principalmente com `--hard`). Os comandos abaixo são um exemplo para ler e experimentar num repositório de teste.",
+    pergunta: "Pergunta: se o commit errado já foi enviado com `git push` para a equipe, qual você usaria → `git ____ HEAD`? Por quê? Me conta seu raciocínio!",
     code: `# ── git revert (SEGURO — cria novo commit) ──
 git revert HEAD        # desfaz último commit
 git revert abc1234     # desfaz commit específico
@@ -1484,7 +1534,8 @@ git restore --staged arquivo.js`,
   },
   {
     keys: ["gitignore", ".gitignore", "ignorar arquivo", "ignore"],
-    text: "`.gitignore` — quais arquivos não versionar:",
+    text: "O `.gitignore` é a lista de coisas que não entram na mala do Git: pastas que podem ser recriadas (`node_modules`), arquivos gerados e, principalmente, segredos como o `.env`. Cada linha é um padrão de nome de arquivo ou pasta. O exemplo abaixo é para ler e adaptar ao seu projeto.",
+    pergunta: "Desafio: complete para ignorar todos os arquivos de log → `____.log`. Por que é perigoso versionar o `.env`? Testa com `git status` e me diz o que apareceu.",
     code: `# .gitignore — exemplos essenciais
 
 # Dependências
@@ -1533,7 +1584,8 @@ echo "segredo.txt" >> .gitignore`,
       "commit padrão",
       "feat fix docs",
     ],
-    text: "Conventional Commits — padrão de mensagens de commit:\n\nFormato: `tipo(escopo): descrição`\n\n• `feat:` — nova funcionalidade\n• `fix:` — correção de bug\n• `docs:` — documentação\n• `style:` — formatação (sem lógica)\n• `refactor:` — refatoração\n• `test:` — testes\n• `chore:` — tarefas de build, CI\n• `perf:` — melhoria de performance\n• `ci:` — mudanças de CI/CD\n\nBreaking change: adicione `!` ou `BREAKING CHANGE:` no rodapé.\n\nFerramentas: `commitlint`, `commitizen`, `husky`",
+    text: "Conventional Commits é um padrão para escrever mensagens de commit, como etiquetas padronizadas num estoque: `tipo(escopo): descrição`. Os tipos mais comuns são `feat` (novidade), `fix` (correção) e `docs` (documentação), e isso deixa o histórico fácil de ler. O código abaixo é um exemplo para ler e experimentar.",
+    pergunta: "Desafio: você corrigiu um bug no botão de login. Complete a mensagem → `git commit -m \"____(login): corrige clique duplo no botão\"`. Me conta qual tipo você escolheu!",
     code: `# Exemplos corretos
 git commit -m "feat(auth): add JWT refresh token"
 git commit -m "fix(api): handle null response from payment gateway"
@@ -1560,7 +1612,8 @@ BREAKING CHANGE: removes legacy PayPal provider"`,
       "get post put delete patch",
       "verbo http",
     ],
-    text: "Métodos HTTP — quando usar cada um:\n\n• `GET` — buscar dados (sem corpo, idempotente)\n• `POST` — criar recurso (com corpo, não idempotente)\n• `PUT` — substituir recurso completo\n• `PATCH` — atualizar parcialmente\n• `DELETE` — remover\n• `HEAD` — igual ao GET mas sem body (checar existência)\n• `OPTIONS` — listar métodos permitidos (usado no CORS)\n\n**Idempotência:** chamar múltiplas vezes tem o mesmo resultado (GET, PUT, DELETE são; POST não é).",
+    text: "Os métodos HTTP são os verbos de um pedido: `GET` busca, `POST` cria, `PUT` substitui inteiro, `PATCH` atualiza só um pedaço e `DELETE` remove. É como numa biblioteca: consultar um livro, doar um novo, trocar por outro ou devolver. O código abaixo é um exemplo para ler e experimentar.",
+    pergunta: "Desafio: para mudar só o e-mail de um usuário, sem enviar os outros dados, qual verbo você usaria → `____ /api/users/1`? Me conta por que escolheu esse!",
     code: `// REST API — nomenclatura de rotas
 GET    /api/users           // listar todos
 GET    /api/users/:id       // buscar um
@@ -1589,11 +1642,13 @@ PUT /api/users/1
       "401",
       "403",
     ],
-    text: "HTTP Status Codes — os mais importantes:\n\n**2xx — Sucesso**\n• `200 OK` — requisição bem-sucedida\n• `201 Created` — recurso criado\n• `204 No Content` — sucesso sem corpo (DELETE)\n\n**3xx — Redirecionamento**\n• `301 Moved Permanently` — URL mudou para sempre\n• `302 Found` — redirecionamento temporário\n\n**4xx — Erro do cliente**\n• `400 Bad Request` — payload inválido\n• `401 Unauthorized` — não autenticado\n• `403 Forbidden` — autenticado mas sem permissão\n• `404 Not Found` — recurso não existe\n• `422 Unprocessable Entity` — validação falhou\n• `429 Too Many Requests` — rate limiting\n\n**5xx — Erro do servidor**\n• `500 Internal Server Error` — erro inesperado\n• `503 Service Unavailable` — fora do ar",
+    text: "O status code é o \"humor\" da resposta do servidor, resumido num número. A família diz tudo: **2xx** deu certo (200 OK, 201 Created), **3xx** redirecionou, **4xx** o erro foi do pedido (400, 401 sem login, 403 sem permissão, 404 não encontrado) e **5xx** o erro foi do servidor (500). Saber ler esse número poupa muito tempo de depuração.",
+    pergunta: "Desafio: abra o DevTools (aba Network), acesse um endereço que não existe num site qualquer e veja o status. Qual número apareceu e de quem foi a \"culpa\": do pedido ou do servidor? Me conta!",
   },
   {
     keys: ["cors", "cross-origin", "origin", "access-control", "preflight"],
-    text: "CORS — Cross-Origin Resource Sharing:",
+    text: "CORS é o porteiro do navegador: por segurança, uma página de um endereço não pode ler respostas de outro endereço, a menos que o servidor diga \"pode entrar\". Quem libera é sempre o **servidor**, enviando cabeçalhos que dizem quais origens são aceitas. O código abaixo é um exemplo para ler e experimentar.",
+    pergunta: "Pergunta: se o seu front roda em `http://localhost:5173`, o que precisa entrar na lista `origin: [____]` do servidor? Me conta o que você tentou e qual erro apareceu no console!",
     code: `// O que é: browser bloqueia requisições entre origens
 // diferentes por segurança. O servidor precisa autorizar.
 
@@ -1629,7 +1684,8 @@ app.options("*", cors()); // habilitar preflight global
       "authentication",
       "bearer",
     ],
-    text: "JWT — JSON Web Tokens para autenticação stateless:",
+    text: "Um JWT é como uma pulseira de show: o servidor entrega ao fazer login e, a cada pedido, você mostra a pulseira em vez de dizer a senha de novo. Ela é assinada com um segredo, então ninguém consegue falsificar, mas o conteúdo pode ser lido, por isso nada de dados sensíveis dentro. O código abaixo é um exemplo para ler e experimentar.",
+    pergunta: "Desafio: complete para o token expirar em 1 hora → `{ expiresIn: \"____\" }`. Por que o `SECRET` vem do `process.env` e não escrito no código? Me conta seu raciocínio!",
     code: `// Estrutura: header.payload.signature (Base64)
 // header:  { alg: "HS256", typ: "JWT" }
 // payload: { sub: "userId", exp: timestamp, role: "admin" }
@@ -1662,7 +1718,8 @@ function authMiddleware(req, res, next) {
   },
   {
     keys: ["websocket", "ws", "socket.io", "tempo real", "realtime"],
-    text: "WebSockets — comunicação bidirecional em tempo real:",
+    text: "HTTP comum é como mandar cartas: você pergunta e espera a resposta. WebSocket é como uma ligação telefônica: a linha fica aberta e os dois lados falam quando quiserem, ideal para chat e notificações em tempo real. O código abaixo é um exemplo para ler e experimentar.",
+    pergunta: "Pergunta: no exemplo, por que os clientes ficam guardados num `Set`? Desafio: complete para avisar quando alguém sai → `ws.on(\"____\", () => clientes.delete(ws));`. Me conta o que você tentou!",
     code: `// Servidor com ws (Node.js)
 const { WebSocketServer } = require("ws");
 const wss = new WebSocketServer({ port: 8080 });
@@ -1693,7 +1750,8 @@ socket.onclose   = () => console.log("Desconectado");`,
   },
   {
     keys: ["graphql", "query graphql", "mutation", "schema", "resolver"],
-    text: "GraphQL — alternativa ao REST com queries flexíveis:",
+    text: "No REST, cada endereço devolve um pacote fechado; no GraphQL, você monta o próprio pedido, como num restaurante self-service, pedindo exatamente os campos que quer. O **schema** é o cardápio que diz o que pode ser pedido. O código abaixo é um exemplo para ler e experimentar.",
+    pergunta: "Desafio: escreva uma query que busque só o nome de um usuário → `{ usuario(id: 1) { ____ } }`. Qual a vantagem de não receber os outros campos? Me conta!",
     code: `# Schema (define os tipos)
 type Query {
     usuario(id: ID!): Usuario
@@ -1728,13 +1786,15 @@ query {
   },
   {
     keys: ["cookie", "session", "cookie vs localstorage", "sessão"],
-    text: "Cookies vs LocalStorage vs SessionStorage:\n\n| | Cookie | LocalStorage | SessionStorage |\n|---|---|---|---|\n| Capacidade | 4KB | 5-10MB | 5-10MB |\n| Expira | configurável | nunca | fechar aba |\n| Enviado ao servidor | sim (automático) | não | não |\n| Acessível via JS | sim* | sim | sim |\n| Seguro (HttpOnly) | sim | não | não |\n\n**Boas práticas:**\n• Tokens de sessão → Cookie HttpOnly + Secure (JS não acessa)\n• Preferências de UI → LocalStorage\n• Estado de wizard → SessionStorage\n• Nunca guarde senhas ou dados sensíveis no browser",
+    text: "Cookies, `localStorage` e `sessionStorage` são três lugares para guardar dados no navegador. O **cookie** é pequeno (cerca de 4KB) e vai junto em toda requisição ao servidor, por isso é usado em sessões de login; o **localStorage** guarda mais e fica até alguém apagar; o **sessionStorage** some ao fechar a aba. Um cookie marcado como `HttpOnly` não pode ser lido pelo JavaScript, o que protege contra roubo de sessão.",
+    pergunta: "Pergunta: para guardar o tema escuro escolhido pelo usuário, qual dos três você usaria, e por quê? Me conta seu raciocínio!",
   },
 
   // ── Banco de Dados avançado ──────────────────────────────
   {
     keys: ["nosql", "mongodb", "documento", "document database", "mongoose"],
-    text: "MongoDB com Mongoose — banco de documentos NoSQL:",
+    text: "MongoDB guarda dados como **documentos**, parecidos com objetos JSON, em vez de linhas de tabela. O Mongoose cria um **schema**, que é como um formulário com regras (campo obrigatório, e-mail único), para os dados não entrarem bagunçados. O código abaixo é um exemplo para ler e experimentar.",
+    pergunta: "Desafio: complete para buscar todos os usuários com mais de 18 anos → `Usuario.find({ idade: { ____: 18 } })`. O que acontece se você tentar salvar sem `nome`? Me conta!",
     code: `const mongoose = require("mongoose");
 
 // Schema e Model
@@ -1762,7 +1822,8 @@ await Usuario.findByIdAndDelete(id);`,
   },
   {
     keys: ["indice", "índice", "index sql", "index banco", "performance sql"],
-    text: "Índices em banco de dados — acelerar consultas:",
+    text: "Um índice no banco é como o índice remissivo de um livro: em vez de folhear página por página, você vai direto ao lugar certo. Ele acelera muito as buscas, mas tem um custo: cada `INSERT` ou `UPDATE` também precisa atualizar o índice. O código abaixo é um exemplo para ler e experimentar.",
+    pergunta: "Pergunta: numa tabela de usuários em que você sempre busca pelo e-mail no login, qual coluna merece índice → `CREATE INDEX idx_x ON usuarios(____);`? Me conta por quê!",
     code: `-- Criar índice (acelera WHERE, JOIN, ORDER BY)
 CREATE INDEX idx_email ON usuarios(email);
 
@@ -1793,7 +1854,8 @@ SELECT * FROM pedidos WHERE cliente_id = 42;
       "rollback",
       "begin",
     ],
-    text: "Transações SQL — garantir consistência de dados (ACID):",
+    text: "Uma transação é um pacote de comandos que acontece **por inteiro ou não acontece**. Pense numa transferência bancária: tirar de uma conta e colocar na outra precisam dar certo juntos; se algo falhar no meio, o `ROLLBACK` desfaz tudo. O código abaixo é um exemplo para ler e experimentar.",
+    pergunta: "Pergunta: o que aconteceria com o dinheiro se o primeiro `UPDATE` funcionasse e o segundo falhasse, **sem** transação? Complete → se der erro, usamos ____. Me conta!",
     code: `-- Transferência bancária (exemplo clássico)
 BEGIN;
 
@@ -1832,7 +1894,8 @@ try {
       "process.env",
       "environment variable",
     ],
-    text: "Variáveis de ambiente — configuração sem hardcode:",
+    text: "Variáveis de ambiente são configurações que ficam fora do código, como senhas e endereços de banco, guardadas num cofre separado (o arquivo `.env`). Assim o mesmo código roda no seu PC e no servidor com configurações diferentes, e os segredos não vão parar no GitHub. O código abaixo é um exemplo para ler e experimentar.",
+    pergunta: "Desafio: crie uma variável `NOME_APP` no `.env` e leia com `process.env.____`. O que aparece se ela não existir? Testa e me diz!",
     code: `# .env (NUNCA commitar no git!)
 DATABASE_URL=postgres://user:senha@localhost:5432/db
 JWT_SECRET=um-segredo-muito-longo-e-aleatorio
@@ -1866,7 +1929,8 @@ if (!db) throw new Error("DATABASE_URL não configurada!");
       "workflow",
       "deploy automático",
     ],
-    text: "GitHub Actions — CI/CD automatizado:",
+    text: "GitHub Actions é um robô que trabalha para você: a cada `push` ou pull request, ele roda os passos que você definiu (instalar, testar, publicar). Se algo quebrar, você descobre na hora, e não depois que o problema chegou no usuário. O arquivo abaixo é um exemplo para ler e experimentar.",
+    pergunta: "Pergunta: lendo o bloco `on:`, em quais situações esse workflow roda? Desafio: adicione a branch `develop` ao `pull_request` → `branches: [main, ____]`. Me conta o que você tentou!",
     code: `# .github/workflows/ci.yml
 name: CI
 
@@ -1911,7 +1975,8 @@ jobs:
       "npm scripts",
       "gerenciador de pacotes",
     ],
-    text: "npm Scripts — automatizar tarefas no package.json:",
+    text: "Os scripts do `package.json` são atalhos com nome para comandos que você usa sempre, como botões de um painel: em vez de lembrar um comando enorme, você roda `npm run dev`. Assim todo mundo do projeto usa os mesmos comandos. O código abaixo é um exemplo para ler e experimentar.",
+    pergunta: "Desafio: crie um script chamado `ola` que imprime uma mensagem → `\"ola\": \"echo ____\"` e rode com `npm run ola`. Testa e me diz o que apareceu!",
     code: `{
   "scripts": {
     "dev":   "node --watch src/index.js",
@@ -1951,7 +2016,8 @@ npx npm-check-updates -u`,
       "eslintrc",
       "prettierrc",
     ],
-    text: "ESLint + Prettier — padronizar e formatar código automaticamente:",
+    text: "ESLint é o revisor que aponta possíveis erros e maus hábitos no código; Prettier é o formatador que arruma espaços, aspas e quebras de linha. Juntos, são como um professor de redação e um diagramador trabalhando em equipe. O código abaixo é um exemplo para ler e experimentar.",
+    pergunta: "Pergunta: na regra `\"prefer-const\": \"error\"`, o que o ESLint vai reclamar no código `let x = 5; console.log(x);`? Me conta o que você acha que deveria mudar!",
     code: `# Instalar
 npm install -D eslint prettier eslint-config-prettier
 
@@ -1994,7 +2060,8 @@ npm install -D eslint prettier eslint-config-prettier
       "expect",
       "mock",
     ],
-    text: "Jest — testes unitários em JavaScript:",
+    text: "Um teste automatizado é um pequeno programa que confere se outro funciona, como um controle de qualidade na saída da forja. No Jest, `describe` agrupa os testes, `it` descreve um caso e `expect(...).toBe(...)` compara o resultado obtido com o esperado. O código abaixo é um exemplo para ler e experimentar.",
+    pergunta: "Desafio: escreva mais um caso → `expect(somar(0, 0)).toBe(____);`. Depois quebre a função de propósito e veja a mensagem do Jest. Me conta o que apareceu!",
     code: `// soma.js
 export const somar = (a, b) => a + b;
 
@@ -2036,7 +2103,8 @@ it("busca usuário", async () => {
       "shell command",
       "cli",
     ],
-    text: "Comandos Linux/Unix essenciais para devs:",
+    text: "O terminal é uma conversa direta com o computador, em texto. Os comandos básicos são como andar numa casa: `pwd` diz em que cômodo você está, `ls` mostra o que tem nele, `cd` muda de cômodo e `mkdir` cria um novo. O `rm -rf` apaga sem lixeira, então use com muito cuidado. O código abaixo é um exemplo para ler e experimentar.",
+    pergunta: "Desafio: crie uma pasta de treino e entre nela → `mkdir treino && ____ treino`. Depois rode `pwd`. Me conta o que apareceu!",
     code: `# Navegação
 pwd           # diretório atual
 ls -la        # listar com detalhes e ocultos
@@ -2068,7 +2136,8 @@ netstat -tlnp          # portas em uso`,
   },
   {
     keys: ["ssh", "chave ssh", "ssh key", "servidor remoto", "sftp"],
-    text: "SSH — conexão segura com servidores remotos:",
+    text: "SSH é um túnel seguro para controlar outro computador pelo terminal. Em vez de senha, o ideal é usar um par de chaves: a **pública** é o cadeado que você instala no servidor e a **privada** é a chave que só você guarda. O código abaixo é um exemplo para ler e experimentar.",
+    pergunta: "Pergunta: qual das duas chaves você pode compartilhar sem medo, a pública ou a privada? Complete → o arquivo `~/.ssh/id_ed25519____` é o que vai para o servidor. Me conta!",
     code: `# Gerar par de chaves (faça uma vez)
 ssh-keygen -t ed25519 -C "seu@email.com"
 # Salva em: ~/.ssh/id_ed25519 (privada) e ~/.ssh/id_ed25519.pub
@@ -2105,7 +2174,8 @@ scp -r pasta/ usuario@servidor.com:/var/www/`,
       "sanitizar",
       "sanitize",
     ],
-    text: "XSS (Cross-Site Scripting) — injeção de scripts maliciosos:",
+    text: "XSS acontece quando um site exibe um texto digitado pelo usuário como se fosse código, e esse \"texto\" é na verdade um script malicioso. É como deixar um estranho escrever direto no seu mural. A defesa principal é tratar entrada do usuário sempre como **texto**, nunca como HTML. O código abaixo é um exemplo para ler e experimentar.",
+    pergunta: "Desafio: qual propriedade é a segura para mostrar o nome digitado → `element.____ = nome;`? Por que o `innerHTML` é perigoso aqui? Me conta seu raciocínio!",
     code: `// VULNERÁVEL — nunca inserir input do usuário direto no DOM
 element.innerHTML = req.query.nome; // ⚠️ PERIGO
 
@@ -2138,7 +2208,8 @@ const limpo = DOMPurify.sanitize(conteudoDoUsuario);
       "prepared statement",
       "parameterized query",
     ],
-    text: "SQL Injection — nunca concatenar input em queries:",
+    text: "SQL Injection é quando alguém digita um pedaço de SQL num campo do formulário e, se você **concatena** esse texto na consulta, o banco executa o comando do atacante. A solução são as consultas parametrizadas: os valores vão separados, num envelope, e nunca viram código. O código abaixo é um exemplo para ler e experimentar.",
+    pergunta: "Pergunta: se alguém digitar `' OR '1'='1` no campo de e-mail da primeira query (a concatenada), o que a consulta vira? Complete a versão segura → `WHERE email = ____`. Me conta!",
     code: `// VULNERÁVEL
 const query = "SELECT * FROM users WHERE email = '" + email + "'";
 // Atacante envia: ' OR '1'='1 → retorna todos os usuários!
@@ -2165,7 +2236,8 @@ const user = await User.findOne({ where: { email } }); // Sequelize
   },
   {
     keys: ["hash", "bcrypt", "senha", "password", "criptografia", "crypto"],
-    text: "Hashing de senhas — nunca salvar em texto claro:",
+    text: "Senha nunca se guarda como texto: guarda-se o **hash**, uma impressão digital da senha que não dá para desfazer. No login, você calcula o hash do que a pessoa digitou e compara com o salvo. O `bcrypt` ainda adiciona sal e é lento de propósito, para atrapalhar quem tenta adivinhar. O código abaixo é um exemplo para ler e experimentar.",
+    pergunta: "Pergunta: se o hash não pode ser desfeito, como o sistema sabe que a senha está certa? Complete → `await bcrypt.____(senhaPlana, hashSalvo)`. Me conta seu raciocínio!",
     code: `// bcrypt — algoritmo recomendado para senhas
 const bcrypt = require("bcrypt");
 
@@ -2194,7 +2266,8 @@ const token = require("crypto").randomBytes(32).toString("hex");`,
   },
   {
     keys: ["https", "ssl", "tls", "certificado", "http seguro"],
-    text: "HTTPS/TLS — por que e como implementar:\n\n**Por que HTTPS:**\n• Criptografa dados em trânsito (senha, token, dados pessoais)\n• Obrigatório para cookies Secure e service workers\n• Google penaliza HTTP no SEO\n• Browsers mostram aviso de 'não seguro'\n\n**Como obter certificado:**\n• **Let's Encrypt** — grátis, renovação automática (use Certbot)\n• Provedores de hospedagem (Vercel, Netlify, Railway) — automático\n• Cloudflare — SSL grátis na borda\n\n**Headers de segurança importantes:**\n• `HSTS` — força HTTPS\n• `X-Content-Type-Options: nosniff`\n• `X-Frame-Options: DENY`\n• `Content-Security-Policy`",
+    text: "HTTPS é o HTTP dentro de um envelope lacrado: os dados viajam criptografados, então ninguém no meio do caminho (como num Wi-Fi público) consegue ler senhas ou tokens. Quem garante que o site é mesmo quem diz ser é o **certificado** TLS, que hoje dá para obter de graça com o Let's Encrypt. Navegadores marcam sites sem HTTPS como inseguros.",
+    pergunta: "Mini-desafio: clique no cadeado da barra de endereço de um site que você usa e veja quem emitiu o certificado e até quando ele vale. O que você encontrou? Me conta!",
   },
 
   // ── Conceitos de programação ─────────────────────────────
@@ -2207,7 +2280,8 @@ const token = require("crypto").randomBytes(32).toString("hex");`,
       "algoritmo tempo",
       "performance algoritmo",
     ],
-    text: "Big O Notation — medir eficiência de algoritmos:\n\n| Notação | Nome | Exemplo |\n|---|---|---|\n| O(1) | Constante | acesso a array por índice |\n| O(log n) | Logarítmica | busca binária |\n| O(n) | Linear | percorrer array |\n| O(n log n) | Linearítmica | merge sort |\n| O(n²) | Quadrática | bubble sort, loops aninhados |\n| O(2ⁿ) | Exponencial | fibonacci sem memo |\n\nRegras práticas:\n• Ignorar constantes: O(2n) → O(n)\n• Ignorar termos menores: O(n² + n) → O(n²)\n• Loops aninhados multiplicam: O(n) × O(n) = O(n²)",
+    text: "Big O mede como o tempo de um algoritmo cresce quando a entrada cresce. Achar uma palavra abrindo o dicionário direto na página é O(1); ler página por página é O(n); abrir no meio e ir dividindo é O(log n). O que importa é o crescimento, não os segundos exatos. O código abaixo é um exemplo para ler e experimentar.",
+    pergunta: "Desafio: dois `for` um dentro do outro, cada um percorrendo o array inteiro, têm complexidade O(____). Se o array dobrar de tamanho, o tempo aumenta quantas vezes? Me conta seu raciocínio!",
     code: `// O(1) — constante
 function primeiroItem(arr) { return arr[0]; }
 
@@ -2249,7 +2323,8 @@ function bubblesort(arr) {
       "queue",
       "heap",
     ],
-    text: "Estruturas de Dados — resumo essencial:",
+    text: "Estruturas de dados são formas de organizar informação. Uma **pilha** funciona como uma pilha de pratos: o último que entra é o primeiro que sai. Uma **fila** é como a fila do pão: o primeiro que chega é o primeiro atendido. O código abaixo é um exemplo para ler e experimentar.",
+    pergunta: "Desafio: numa pilha, você faz `push(1)`, `push(2)`, `push(3)` e depois `pop()`. Qual número sai: ____? E se fosse uma fila? Testa e me conta!",
     code: `// PILHA (Stack) — LIFO (Last In, First Out)
 class Pilha {
     #itens = [];
@@ -2293,7 +2368,8 @@ class ListaLigada {
       "interface segregation",
       "dependency inversion",
     ],
-    text: "SOLID — os 5 princípios de design orientado a objetos:\n\n**S** — Single Responsibility: cada classe tem uma razão para mudar\n**O** — Open/Closed: aberto para extensão, fechado para modificação\n**L** — Liskov Substitution: subclasses substituem a superclasse sem quebrar\n**I** — Interface Segregation: interfaces pequenas e específicas\n**D** — Dependency Inversion: depender de abstrações, não de implementações\n\n**Benefícios:** código mais testável, manutenível e extensível.",
+    text: "SOLID são cinco conselhos para o código crescer sem virar bagunça. O mais importante para começar é o **S** (responsabilidade única): cada classe deve ter um só trabalho, como numa oficina em que cada ferramenta faz uma coisa bem feita, em vez de um canivete que faz tudo mal. O código abaixo é um exemplo para ler e experimentar.",
+    pergunta: "Pergunta: na primeira classe `Usuario` do exemplo, quantas responsabilidades diferentes ela tem: ____? Em quantas classes você a dividiria? Me conta!",
     code: `// S — Single Responsibility (ruim vs bom)
 // ❌ Uma classe faz tudo
 class Usuario {
@@ -2330,7 +2406,8 @@ const pedidoTest = new Pedido(new FakeDb());`,
       "observer",
       "strategy",
     ],
-    text: "Design Patterns — soluções clássicas para problemas comuns:",
+    text: "Design patterns são receitas testadas para problemas que aparecem sempre. O **Singleton** garante uma única instância (como um só diretor na escola), a **Factory** fabrica objetos sem você saber os detalhes e o **Observer** avisa vários interessados quando algo muda, como um canal com inscritos. O código abaixo é um exemplo para ler e experimentar.",
+    pergunta: "Desafio: chame `Config.getInstance()` duas vezes e compare com `===`. O resultado é ____? Por quê? Testa e me diz o que apareceu.",
     code: `// SINGLETON — uma única instância
 class Config {
     static #instance;
@@ -2372,7 +2449,8 @@ function criarAnimal(tipo) {
       "pure function",
       "side effect",
     ],
-    text: "Programação Funcional — princípios e padrões:",
+    text: "Programação funcional prefere funções **puras**: com a mesma entrada, sempre a mesma saída, sem mexer em nada fora delas, como uma calculadora. Também evita alterar dados existentes (imutabilidade): em vez de riscar a lista original, você cria uma nova. O código abaixo é um exemplo para ler e experimentar.",
+    pergunta: "Pergunta: por que `somarImpura` é impura? Chame `somarImpura(5)` duas vezes e veja o resultado. Desafio: reescreva a soma sem usar a variável `total` de fora → `const somarPura = (total, n) => ____;`. Me conta!",
     code: `// 1. Funções puras — mesmo input, mesmo output, sem efeitos colaterais
 const somar = (a, b) => a + b; // pura
 let total = 0;
@@ -2408,11 +2486,13 @@ olá("Bob"); // "Olá, Bob!"`,
       "monolito",
       "arquitetura",
     ],
-    text: "Microsserviços vs Monolito — quando usar cada um:\n\n**Monolito:**\n• Uma aplicação, uma deploy\n• Simples de desenvolver e debugar no início\n• Ideal para times pequenos e MVPs\n• Problemas: escalar partes específicas, deploys de risco\n\n**Microsserviços:**\n• Serviços independentes por domínio (auth, pagamento, catálogo)\n• Deploy e escala independentes\n• Time pode escolher tecnologia por serviço\n• Complexidade: comunicação entre serviços, observabilidade, latência de rede\n\n**Regra prática:** comece monolito, extraia microsserviços quando a dor justificar (escala ou times independentes).\n\nComunicação: REST, gRPC, ou mensageria (RabbitMQ, Kafka).",
+    text: "Um **monolito** é uma loja única em que tudo funciona sob o mesmo teto: simples de começar, testar e publicar. **Microsserviços** são várias lojinhas especializadas que conversam entre si: cada uma escala sozinha, mas a comunicação e a manutenção ficam bem mais complicadas. Para quem está começando, e para a maioria dos projetos, o monolito bem organizado é o ponto de partida certo.",
+    pergunta: "Pergunta: pensando num sistema de pedidos de lanchonete, quais partes você separaria se um dia ele crescesse muito (ex.: pagamento, cardápio, ____)? Me conta seu raciocínio!",
   },
   {
     keys: ["mvc", "model view controller", "padrão mvc", "mvvm"],
-    text: "MVC — padrão arquitetural Model-View-Controller:",
+    text: "MVC divide o sistema em três papéis, como num restaurante: o **Model** é a cozinha (dados e regras), a **View** é o prato apresentado (a tela) e o **Controller** é o garçom que recebe o pedido e leva entre um e outro. Cada parte cuida só do seu trabalho. O código abaixo é um exemplo para ler e experimentar.",
+    pergunta: "Pergunta: no exemplo, a regra \"preço não pode ser negativo\" ficou em qual camada: ____? Por que faz sentido ela estar ali e não na View? Me conta!",
     code: `// MODEL — regras de negócio e dados
 class ProdutoModel {
     async buscarTodos() {
@@ -2455,7 +2535,8 @@ router.post("/produtos", ctrl.criar.bind(ctrl));`,
       "desenvolvimento guiado",
       "red green refactor",
     ],
-    text: "TDD — Test Driven Development (desenvolvimento guiado por testes):\n\nCiclo: **Red → Green → Refactor**\n\n1. **Red:** escreva o teste que falha (a feature ainda não existe)\n2. **Green:** escreva o mínimo de código para o teste passar\n3. **Refactor:** melhore o código sem quebrar os testes\n\n**Benefícios:**\n• Design emergente e desacoplado\n• Documentação viva (testes descrevem comportamento)\n• Confiança para refatorar\n• Menos bugs em produção\n\n**Quando não usar:** prototipagem rápida, código descartável, integração com sistemas externos imprevisíveis.",
+    text: "TDD é escrever o teste **antes** do código, como desenhar o molde antes de derramar o metal. O ciclo é: **Red** (o teste falha porque o código não existe), **Green** (escreve o mínimo para passar) e **Refactor** (melhora o código mantendo o teste verde). O código abaixo é um exemplo para ler e experimentar.",
+    pergunta: "Desafio: escreva só o teste de uma função `ehPar(n)` → `expect(ehPar(4)).toBe(____);`. Ele vai falhar primeiro (Red). Agora, qual o mínimo de código para ficar verde? Me conta o que você tentou!",
     code: `// 1. RED — teste falha (calculadora não existe)
 it("divide dois números", () => {
     expect(dividir(10, 2)).toBe(5);
@@ -2489,7 +2570,8 @@ function dividir(a, b) {
       "ssr",
       "ssg",
     ],
-    text: "Next.js — React com SSR, SSG e App Router:",
+    text: "Next.js é o React com superpoderes de servidor: a página pode ser montada no servidor antes de chegar ao navegador, o que deixa tudo mais rápido e melhor para o Google. No App Router, cada pasta dentro de `app/` vira uma rota do site. O código abaixo é um exemplo para ler e experimentar.",
+    pergunta: "Pergunta: se você criar o arquivo `app/sobre/page.jsx`, qual endereço passa a existir → `localhost:3000/____`? Testa e me diz o que apareceu!",
     code: `// app/page.tsx — Server Component (padrão no App Router)
 // Roda no servidor — acessa banco, sem bundle extra
 async function HomePage() {
@@ -2527,7 +2609,8 @@ export async function POST(req: Request) {
   },
   {
     keys: ["tailwind", "tailwindcss", "utility class", "classe utilitária"],
-    text: "Tailwind CSS — utility-first sem sair do HTML:",
+    text: "Tailwind é um estojo de pequenos carimbos de estilo: em vez de escrever CSS num arquivo separado, você aplica classes prontas como `p-6` (padding) e `text-xl` (texto grande) direto no HTML. Cada classe faz uma coisa só. O código abaixo é um exemplo para ler e experimentar.",
+    pergunta: "Desafio: deixe o título vermelho e em negrito trocando as classes → `class=\"text-____-600 font-____\"`. Me conta o que você tentou!",
     code: `<!-- Sem Tailwind (CSS separado) -->
 <div class="card">
   <h2 class="card-title">Título</h2>
@@ -2565,7 +2648,8 @@ export async function POST(req: Request) {
       "readfile",
       "writefile",
     ],
-    text: "Node.js File System (fs) — manipular arquivos:",
+    text: "O módulo `fs` dá ao Node a capacidade de mexer em arquivos: ler, escrever, acrescentar e criar pastas, como um arquivista. Já o módulo `path` monta caminhos de pasta do jeito certo em qualquer sistema operacional. O código abaixo é um exemplo para ler e experimentar.",
+    pergunta: "Desafio: complete para acrescentar uma linha sem apagar o arquivo → `await fs.____(\"log.txt\", \"oi\\n\")`. Roda duas vezes e me diz o que ficou no arquivo!",
     code: `const fs   = require("fs/promises"); // versão async
 const path = require("path");
 
@@ -2606,7 +2690,8 @@ const ext = path.extname("arquivo.js"); // ".js"`,
       "writable",
       "dados grandes",
     ],
-    text: "Streams em Node.js — processar grandes volumes de dados:",
+    text: "Streams processam dados aos poucos, como beber água de um canudo em vez de virar o balde inteiro. Isso permite ler um arquivo de vários gigas sem estourar a memória, pedaço por pedaço. O código abaixo é um exemplo para ler e experimentar.",
+    pergunta: "Pergunta: por que ler um CSV de 5 GB com `fs.readFile` poderia travar o programa, mas com stream não? Me conta seu raciocínio!",
     code: `const fs       = require("fs");
 const readline = require("readline");
 const { pipeline } = require("stream/promises");
@@ -2639,7 +2724,8 @@ app.get("/download", (req, res) => {
   // ── Outros tópicos úteis ─────────────────────────────────
   {
     keys: ["vuejs", "vue", "vue.js", "composition api", "ref vue", "reactive"],
-    text: "Vue.js — framework progressivo para UI reativas:",
+    text: "Vue é um framework para criar telas **reativas**: quando um dado muda, a tela se atualiza sozinha, como um placar eletrônico. O `ref` guarda um valor reativo, e no template você usa `{{ }}` para mostrar valores e `@click` para reagir a cliques. O código abaixo é um exemplo para ler e experimentar.",
+    pergunta: "Desafio: crie um botão que diminui a contagem → `<button @click=\"____\">-1</button>`, com a função correspondente. Testa e me diz o que apareceu!",
     code: `<!-- Componente com Composition API (Vue 3) -->
 <template>
     <div>
@@ -2684,7 +2770,8 @@ button { background: #42b883; color: white; }
       "manifest",
       "offline",
     ],
-    text: "PWA — Progressive Web App (app instalável no browser):",
+    text: "Uma PWA é um site que se comporta como aplicativo: pode ser instalado na tela inicial e até funcionar sem internet. O `manifest.json` é a carteira de identidade do app (nome, ícone, cores) e o **service worker** é um assistente nos bastidores que guarda arquivos em cache. O código abaixo é um exemplo para ler e experimentar.",
+    pergunta: "Pergunta: se a internet cair, de onde o service worker tira os arquivos para a página continuar abrindo? Complete → do ____. Me conta!",
     code: `// manifest.json — torna o site "instalável"
 {
     "name": "Meu App",
@@ -2718,7 +2805,8 @@ self.addEventListener("fetch", (e) => {
   },
   {
     keys: ["axios", "http client", "interceptor", "instancia axios"],
-    text: "Axios — cliente HTTP com interceptors e instâncias:",
+    text: "Axios é um cliente HTTP, como o `fetch`, mas com algumas facilidades: já converte JSON e permite criar uma \"instância\" com configurações padrão. Os **interceptors** são como um posto de pedágio por onde toda requisição passa, ótimo para adicionar o token automaticamente. O código abaixo é um exemplo para ler e experimentar.",
+    pergunta: "Pergunta: qual a vantagem de colocar o token no interceptor em vez de repetir em cada chamada? Desafio: complete → `config.headers.Authorization = \"Bearer \" + ____;`. Me conta!",
     code: `import axios from "axios";
 
 // Instância configurada
@@ -2753,7 +2841,8 @@ const novo = await api.post("/users", { nome: "Ana" });`,
   },
   {
     keys: ["orm", "sequelize", "prisma", "typeorm", "object relational"],
-    text: "Prisma ORM — o mais moderno para Node.js/TypeScript:",
+    text: "Um ORM é um tradutor entre o seu código e o banco de dados: você trabalha com objetos e funções, e ele escreve o SQL por você. No Prisma, o **schema** descreve as tabelas e o cliente gerado oferece funções como `findMany` e `create`. O código abaixo é um exemplo para ler e experimentar.",
+    pergunta: "Desafio: complete para buscar um usuário pelo e-mail → `prisma.usuario.findUnique({ where: { ____: \"ana@email.com\" } })`. Por que o `email` pode ser usado aqui? (Dica: olhe o `@unique`.) Me conta!",
     code: `// schema.prisma
 model Usuario {
     id        Int      @id @default(autoincrement())
@@ -2798,7 +2887,8 @@ await prisma.usuario.create({
       "throttle",
       "memoization",
     ],
-    text: "Performance no front-end — técnicas práticas:",
+    text: "Performance no front é fazer menos trabalho à toa. O **debounce** espera a pessoa parar de digitar antes de agir, como um elevador que aguarda todos entrarem; o **throttle** limita quantas vezes algo roda por segundo; e o **lazy load** só carrega imagens quando elas aparecem na tela. O código abaixo é um exemplo para ler e experimentar.",
+    pergunta: "Desafio: num campo de busca, com `debounce(buscar, ____)`, quantos milissegundos você daria de espera? Digite rápido e conte quantas vezes `buscar` foi chamada. Me conta o que apareceu!",
     code: `// DEBOUNCE — espera o usuário parar de digitar
 function debounce(fn, delay) {
     let timer;
@@ -2844,7 +2934,8 @@ const fibMemo = memoizar(fib);`,
       "wcag",
       "screen reader",
     ],
-    text: "Acessibilidade Web (a11y) — código inclusivo:",
+    text: "Acessibilidade é fazer o site funcionar para todo mundo, inclusive quem usa leitor de tela ou navega só pelo teclado. É como colocar rampa e corrimão num prédio: atributos como `alt` nas imagens e `aria-label` em botões de ícone dão nome ao que antes era só visual. O código abaixo é um exemplo para ler e experimentar.",
+    pergunta: "Desafio: complete a imagem para quem não pode vê-la → `<img src=\"gato.jpg\" alt=\"____\">`. Tente navegar numa página só com Tab: o que ficou difícil? Me conta!",
     code: `<!-- Atributos ARIA essenciais -->
 <button aria-label="Fechar modal" onclick="fechar()">✕</button>
 
@@ -2874,7 +2965,8 @@ const fibMemo = memoizar(fib);`,
   },
   {
     keys: ["web vitals", "lcp", "fid", "cls", "core web vitals", "lighthouse"],
-    text: "Core Web Vitals — métricas de performance do Google:\n\n• **LCP** (Largest Contentful Paint): tempo para carregar o maior elemento visível. Meta: < 2.5s. Otimizar: comprimir imagens, CDN, preload de fontes.\n\n• **FID** (First Input Delay) / **INP**: tempo até o browser responder à primeira interação. Meta: < 100ms. Otimizar: menos JS no main thread, lazy loading.\n\n• **CLS** (Cumulative Layout Shift): estabilidade visual (elementos que se movem). Meta: < 0.1. Otimizar: definir width/height em imagens, evitar inserir conteúdo sobre o existente.\n\nFerramenta: Chrome DevTools → Lighthouse → Performance.",
+    text: "Core Web Vitals são as notas que o Google dá para a experiência da sua página. **LCP** mede quanto tempo o maior conteúdo leva para aparecer (bom: até 2,5s), **INP** mede o quanto a página demora para reagir a um clique (bom: até 200ms; substituiu o antigo FID) e **CLS** mede quanto o layout \"pula\" enquanto carrega (bom: até 0,1). Imagens pesadas e elementos sem tamanho definido são vilões comuns.",
+    pergunta: "Mini-desafio: rode o Lighthouse (DevTools > Lighthouse) numa página sua. Qual das três métricas teve a pior nota e o que você acha que causou isso? Me conta!",
   },
   {
     keys: [
@@ -2883,7 +2975,8 @@ const fibMemo = memoizar(fib);`,
       "versionamento api",
       "api versão",
     ],
-    text: "Boas práticas de design de REST API:",
+    text: "Uma boa API REST é previsível, como as placas de uma estrada bem sinalizada. A ideia é usar **substantivos** nas rotas (`/users`) e deixar o verbo HTTP dizer a ação, versionar (`/v1`) para não quebrar quem já usa e paginar listas grandes. O código abaixo é um exemplo para ler e experimentar.",
+    pergunta: "Desafio: reescreva a rota ruim `POST /api/createUser` no padrão REST → `____ /api/v1/____`. Me conta o que você tentou!",
     code: `// ── Nomenclatura de rotas ──
 // ✅ Substantivos no plural, hierárquico
 GET    /api/v1/users
@@ -2918,7 +3011,8 @@ GET /api/v1/products?categoria=tech&preco_max=500
   },
   {
     keys: ["webpack", "vite", "bundler", "bundle", "tree shaking", "build"],
-    text: "Vite — bundler moderno (muito mais rápido que Webpack):",
+    text: "Um bundler pega os vários arquivos do projeto e empacota tudo para o navegador, como montar as malas para uma viagem. O Vite é rápido porque, durante o desenvolvimento, entrega os arquivos sob demanda, e só empacota de verdade no build final. O código abaixo é um exemplo para ler e experimentar.",
+    pergunta: "Desafio: crie um projeto com o primeiro comando, mude um texto no `App` e salve. Quanto tempo levou para aparecer na tela? E qual comando gera a versão final → `npm run ____`? Me conta!",
     code: `# Criar projeto com Vite
 npm create vite@latest meu-app -- --template react-ts
 cd meu-app && npm install && npm run dev
@@ -2952,7 +3046,8 @@ export default defineConfig({
   },
   {
     keys: ["monorepo", "turborepo", "nx", "workspaces", "repositório único"],
-    text: "Monorepo — múltiplos pacotes em um repositório:",
+    text: "Um monorepo é um único repositório que guarda vários projetos relacionados, como um prédio com vários apartamentos que compartilham a mesma portaria. O front, o back e os componentes compartilhados ficam juntos, e uma mudança num pacote comum chega a todos de uma vez. O código abaixo é um exemplo para ler e experimentar.",
+    pergunta: "Pergunta: na estrutura do exemplo, em qual pasta você colocaria uma função de formatar moeda usada pelo `web` e pela `api` → `packages/____`? Me conta seu raciocínio!",
     code: `# Estrutura de monorepo com npm workspaces
 meu-monorepo/
 ├── apps/
@@ -2984,7 +3079,8 @@ npm install react --workspace=apps/web
   },
   {
     keys: ["rate limiting", "rate limit", "throttling api", "ddos proteção"],
-    text: "Rate Limiting — proteger a API de abuso:",
+    text: "Rate limiting é o segurança na porta da balada: cada visitante só pode entrar um certo número de vezes num período. Isso protege a API de abusos, robôs e tentativas de adivinhar senha. O código abaixo é um exemplo para ler e experimentar.",
+    pergunta: "Desafio: deixe a rota de login mais rígida, com no máximo 5 tentativas a cada 15 minutos → `max: ____`. O que o cliente recebe quando passa do limite? Me conta!",
     code: `// express-rate-limit
 const rateLimit = require("express-rate-limit");
 
@@ -3018,7 +3114,8 @@ const limiterDistribuido = rateLimit({
   },
   {
     keys: ["webhook", "webhooks", "callback url", "evento externo"],
-    text: "Webhooks — receber eventos de sistemas externos:",
+    text: "Um webhook é o contrário de ficar perguntando \"já chegou?\": você deixa seu endereço com um sistema externo e ele **avisa você** quando algo acontece, como o entregador que toca a campainha. Por segurança, sempre confira a assinatura para ter certeza de quem mandou o aviso. O código abaixo é um exemplo para ler e experimentar.",
+    pergunta: "Pergunta: por que o exemplo verifica a `stripe-signature` antes de confiar no evento? O que um atacante poderia fazer sem essa checagem? Me conta seu raciocínio!",
     code: `// Receber webhook do Stripe (pagamentos)
 app.post("/webhooks/stripe",
     express.raw({ type: "application/json" }), // raw body para verificar assinatura
@@ -3058,7 +3155,8 @@ app.post("/webhooks/stripe",
       "bull",
       "job queue",
     ],
-    text: "Filas de mensagens — processar tarefas em segundo plano:",
+    text: "Uma fila de mensagens é como a comanda de uma lanchonete: o caixa anota o pedido e já atende o próximo cliente, enquanto a cozinha (o **worker**) prepara no seu tempo. Assim tarefas demoradas, como enviar e-mails, não travam a resposta para o usuário. O código abaixo é um exemplo para ler e experimentar.",
+    pergunta: "Pergunta: se o envio de e-mail falhar, qual a vantagem de a tarefa estar numa fila em vez de ter sido feita direto na requisição? Complete → a fila pode ____ a tarefa. Me conta!",
     code: `// BullMQ — filas com Redis (Node.js)
 const { Queue, Worker } = require("bullmq");
 const { Redis } = require("ioredis");
@@ -3097,7 +3195,8 @@ worker.on("failed",    (job, err) => console.error(err));`,
       "context api",
       "store",
     ],
-    text: "Gerenciamento de estado global no React — Zustand (minimalista):",
+    text: "Estado global é um quadro de avisos que qualquer componente do app pode ler e atualizar, sem precisar passar dados de pai para filho por vários níveis. O Zustand cria esse quadro com pouquíssimo código: você define os dados e as funções que os alteram. O código abaixo é um exemplo para ler e experimentar.",
+    pergunta: "Desafio: crie uma ação para esvaziar o carrinho → `limpar: () => set({ itens: ____, total: 0 })`. Por que usamos `[...s.itens, produto]` e não `push`? Me conta!",
     code: `import { create } from "zustand";
 
 const useCarrinho = create((set) => ({
@@ -3137,7 +3236,8 @@ function Carrinho() {
       "sorting algorithm",
       "algoritmo de ordenação",
     ],
-    text: "Algoritmos de ordenação — Merge Sort e Quick Sort:",
+    text: "Merge Sort e Quick Sort usam a estratégia **dividir para conquistar**: quebrar o problema em pedaços menores, resolver cada um e juntar. No Merge Sort, é como ordenar um baralho dividindo em montinhos, ordenando cada um e intercalando as cartas. O código abaixo é um exemplo para ler e experimentar.",
+    pergunta: "Desafio: faça na mão o `mergeSort([5, 2, 8, 1])`: como fica a divisão em ____ e ____, e depois a junção? Confira rodando o código e me conta o que apareceu!",
     code: `// MERGE SORT — O(n log n) estável, divide e conquista
 function mergeSort(arr) {
     if (arr.length <= 1) return arr;
@@ -3175,7 +3275,8 @@ arr.sort((a, b) => a.nome.localeCompare(b.nome)); // strings`,
       "legibilidade",
       "boas práticas código",
     ],
-    text: "Clean Code — princípios de código legível:\n\n• **Nomes que revelam intenção:** `diasParaExpirar` > `d`, `buscarUsuarioPorEmail()` > `get()`\n• **Booleanos:** prefixo is/has/can — `isAtivo`, `hasPermissao`, `canEdit`\n• **Funções fazem UMA coisa** — se precisar de 'e' no nome, extraia\n• **Máx 3 parâmetros** — mais do que isso, use objeto\n• **Sem números mágicos** — use constante nomeada\n• **Sem código morto** — delete blocos comentados\n• **Comentários** — só quando o PORQUÊ não é óbvio, nunca o O QUÊ",
+    text: "Código limpo é código que outra pessoa (ou você daqui a seis meses) entende sem esforço. Nomes que dizem a intenção, funções pequenas que fazem uma coisa só e números com nome (constantes) valem mais do que comentários explicando código confuso. O código abaixo é um exemplo para ler e experimentar.",
+    pergunta: "Desafio: renomeie esta função para algo que diga o que ela faz → `function ____(lista) { return lista.filter(u => u.ativo); }`. Me conta o nome que você escolheu!",
     code: `// ❌ Código obscuro
 function calc(x, y, z) {
     return x < 0.15 ? y * z : y * z * 1.23;
