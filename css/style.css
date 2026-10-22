@@ -831,6 +831,9 @@ body {
     }
 
     #app {
+        position: fixed;
+        top: var(--viewport-top, 0px);
+        left: 0;
         width: 100%;
         height: 100vh;
         height: var(--viewport-height, 100dvh);
@@ -846,12 +849,12 @@ body {
     }
 
     #mascote-wrap {
-        width: 80px;
+        width: 104px;
     }
 
     #mascote-wrap svg {
-        width: 80px;
-        height: 78px;
+        width: 104px;
+        height: 101px;
     }
 
     .header-info h1 {
@@ -922,20 +925,9 @@ body {
 
 /* Preserva a entrada quando o teclado deixa pouca altura disponível. */
 .short-viewport #header {
-    padding-top: calc(6px + env(safe-area-inset-top, 0px));
-    padding-bottom: 6px;
+    display: none;
 }
 
-.short-viewport #mascote-wrap {
-    width: 44px;
-}
-
-.short-viewport #mascote-wrap svg {
-    width: 44px;
-    height: 43px;
-}
-
-.short-viewport .status,
 .short-viewport #atalhos {
     display: none;
 }

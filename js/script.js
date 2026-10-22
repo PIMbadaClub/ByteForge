@@ -796,6 +796,9 @@ function syncViewport() {
     document.documentElement.style.setProperty(
       "--viewport-height", `${viewport?.height || window.innerHeight}px`,
     );
+    document.documentElement.style.setProperty(
+      "--viewport-top", `${viewport?.offsetTop || 0}px`,
+    );
     if (atBottom) scrollDown();
   }
   if (bubble.classList.contains("show")) positionBubble();
@@ -804,6 +807,7 @@ function syncViewport() {
 window.addEventListener("resize", syncViewport);
 window.visualViewport?.addEventListener("resize", syncViewport);
 window.visualViewport?.addEventListener("scroll", () => {
+  syncViewport();
   if (bubble.classList.contains("show")) positionBubble();
 });
 syncViewport();
