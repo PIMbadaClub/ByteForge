@@ -957,9 +957,141 @@ function scheduleCalmDown() {
     if (!mood) return;
     setMood(mood - 1);
     clickStreak = mood * CLICKS_PER_LEVEL;
+    if (mood < 2) moveMascot(0, 0); // calmo o bastante para voltar ao lugar
     if (!mood) showBubble(nextCalmLine());
     else calmTimer = setTimeout(calmStep, 2500);
   }, 3000);
+}
+
+// ════════════════════════════════════════════════════════════
+// DESVIO — bravo, ele foge do mouse (no celular, pula a cada toque)
+// ════════════════════════════════════════════════════════════
+const DODGE_RADIUS = 80;   // px do centro do mascote até o mouse
+const DODGE_CHANCE = 0.7;  // às vezes ele vacila e dá pra pegar
+let dodgeX = 0;
+let dodgeY = 0;
+let lastDodgeAt = 0;
+
+// Quanto ele pode andar sem sair do cabeçalho. offsetLeft/Top ignoram o
+// translate, então a medida não depende de onde ele está no meio do pulo.
+function dodgeLimits() {
+  const header = document.getElementById("header");
+  const { offsetLeft: left, offsetTop: top, offsetWidth: w, offsetHeight: h } = mascoteWrap;
+  return {
+    minX: 4 - left,
+    maxX: header.clientWidth - 4 - w - left,
+    minY: Math.min(0, 2 - top),
+    maxY: Math.max(0, header.clientHeight - 2 - h - top),
+  };
+}
+
+function moveMascot(x, y) {
+  const lim = dodgeLimits();
+  dodgeX = Math.round(Math.max(lim.minX, Math.min(lim.maxX, x)));
+  dodgeY = Math.round(Math.max(lim.minY, Math.min(lim.maxY, y)));
+  mascoteWrap.style.translate = dodgeX || dodgeY ? `${dodgeX}px ${dodgeY}px` : "";
+  // o balão acompanha depois que ele termina de se mexer
+  if (bubble.classList.contains("show")) setTimeout(positionBubble, 260);
+}
+
+function jumpToRandomSpot() {
+  const lim = dodgeLimits();
+  let x;
+  do {
+    x = lim.minX + Math.random() * (lim.maxX - lim.minX);
+  } while (Math.abs(x - dodgeX) < 60 && lim.maxX - lim.minX > 120);
+  moveMascot(x, lim.minY + Math.random() * (lim.maxY - lim.minY));
+}
+
+document.addEventListener("mousemove", (e) => {
+  if (mood < 2 || crashed) return;
+  const rect = mascoteWrap.getBoundingClientRect();
+  const cx = rect.left + rect.width / 2;
+  const cy = rect.top + rect.height / 2;
+  const dx = cx - e.clientX;
+  const dy = cy - e.clientY;
+  const dist = Math.hypot(dx, dy);
+  const now = Date.now();
+  if (dist > DODGE_RADIUS || now - lastDodgeAt < 300) return;
+  lastDodgeAt = now;
+  if (Math.random() > DODGE_CHANCE) return;
+
+  // foge na direção oposta ao mouse; encurralado na parede, pula pro outro lado
+  const step = 110;
+  const before = dodgeX;
+  moveMascot(dodgeX + (dx / (dist || 1)) * step, dodgeY + (dy / (dist || 1)) * 20);
+  if (Math.abs(dodgeX - before) < 20) jumpToRandomSpot();
+});
+
+// ════════════════════════════════════════════════════════════
+// ERRO 500 FAKE — clicou demais com ele furioso, ele "derruba o site"
+// ════════════════════════════════════════════════════════════
+const RAGE_CLICKS = 3 * CLICKS_PER_LEVEL + 6; // 5 cliques depois de ficar furioso
+let crashed = false;
+
+function crashSite() {
+  crashed = true;
+  clearTimeout(calmTimer);
+  clearTimeout(bubbleTimer);
+  bubble.classList.remove("show");
+  const originalTitle = document.title;
+  document.title = "500 Internal Server Error";
+
+  const overlay = document.createElement("div");
+  overlay.id = "fake-500";
+  overlay.setAttribute("role", "alertdialog");
+  overlay.setAttribute("aria-label", "Erro 500 (de brincadeira)");
+  overlay.innerHTML = `
+    <div class="f500-page">
+      <h1>Internal Server Error</h1>
+      <p>The server encountered an internal error or misconfiguration and was unable to complete your request.</p>
+      <p>Please contact the server administrator to inform them of the time this error occurred, and the actions you performed just before this error.</p>
+      <p>More information about this error may be available in the server error log.</p>
+      <hr>
+      <address>ByteForge/1.0 (Bigorna) Server at ${location.hostname} Port 443</address>
+    </div>
+    <div class="f500-reveal">
+      <div class="f500-bubble">😈 <strong>Pegadinha!</strong> Não caiu nada... eu só precisava esfriar a cabeça.<br><small>Você clicou ${clickStreak} vezes em mim, hein?</small></div>
+      <button type="button" class="f500-btn">🔥 Religar a forja</button>
+    </div>`;
+
+  // mascote rindo, copiado do cabeçalho (sem ids, para não duplicar)
+  const laugh = document.getElementById("byteforge").cloneNode(true);
+  const grin = laugh.querySelector("#bot-mouth");
+  grin.setAttribute("d", "M 43 57 Q 50 67 57 57 Z"); // boca aberta, gargalhando
+  grin.setAttribute("fill", "#3a1f04");
+  laugh.querySelectorAll("[id]").forEach((el) => el.removeAttribute("id"));
+  laugh.removeAttribute("id");
+  laugh.querySelector(".brows")?.remove();
+  laugh.setAttribute("aria-hidden", "true");
+  overlay.querySelector(".f500-reveal").prepend(laugh);
+
+  document.body.appendChild(overlay);
+  setMood(0);
+  moveMascot(0, 0);
+
+  const revealTimer = setTimeout(() => {
+    overlay.classList.add("reveal");
+    overlay.querySelector(".f500-btn").focus();
+  }, 2800);
+
+  function restore() {
+    clearTimeout(revealTimer);
+    document.removeEventListener("keydown", onKey);
+    overlay.remove();
+    document.title = originalTitle;
+    crashed = false;
+    clickStreak = 0;
+    moveMascot(0, 0);
+    showBubble("😌 Pronto, forja religada. Agora vamos com calma, combinado?");
+  }
+
+  function onKey(e) {
+    if (e.key === "Escape") restore();
+  }
+
+  overlay.querySelector(".f500-btn").onclick = restore;
+  document.addEventListener("keydown", onKey);
 }
 
 // Clique no mascote → pula + reação (ou bronca, se clicar demais)
@@ -981,10 +1113,21 @@ mascoteWrap.addEventListener("click", () => {
   clickStreak = (now - lastClickAt < 2000 ? clickStreak : mood * CLICKS_PER_LEVEL) + 1;
   lastClickAt = now;
 
+  if (crashed) return;
+  if (clickStreak >= RAGE_CLICKS) {
+    crashSite();
+    return;
+  }
+
   const level = Math.min(3, Math.floor((clickStreak - 1) / CLICKS_PER_LEVEL));
   if (level !== mood) setMood(level);
   showBubble(level ? moodLineBags[level]() : nextReaction());
   scheduleCalmDown();
+
+  // no celular não tem mouse para fugir: bravo, ele pula para outro lugar
+  if (level >= 2 && matchMedia("(hover: none)").matches) {
+    setTimeout(jumpToRandomSpot, 350);
+  }
 });
 
 // Pensamentos automáticos (12 – 22 s)
