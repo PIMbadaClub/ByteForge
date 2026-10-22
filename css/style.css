@@ -929,6 +929,258 @@ body {
     .f500-reveal svg { animation: none; }
 }
 
+/* ── BOSS FIGHT ─────────────────────────────────────────────── */
+#boss-arena {
+    position: fixed;
+    inset: 0;
+    z-index: 1001;
+    display: flex;
+    flex-direction: column;
+    background:
+        radial-gradient(ellipse at 50% 110%, rgba(255,80,0,.35) 0%, transparent 60%),
+        linear-gradient(180deg, #120c08 0%, #1d1009 100%);
+    color: var(--text);
+    font-family: 'Georgia', serif;
+    touch-action: manipulation;
+    user-select: none;
+    -webkit-user-select: none;
+}
+
+#boss-arena.hurt { animation: hurt-flash .35s ease-out; }
+
+@keyframes hurt-flash {
+    0%   { box-shadow: inset 0 0 0 9999px rgba(255,0,0,.35); }
+    100% { box-shadow: inset 0 0 0 9999px rgba(255,0,0,0); }
+}
+
+.boss-hud {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    grid-template-areas: "name hearts" "hp hp";
+    gap: 6px 12px;
+    align-items: center;
+    padding: calc(12px + env(safe-area-inset-top, 0px)) 16px 10px;
+    border-bottom: 1px solid var(--border);
+    background: rgba(0,0,0,.35);
+}
+
+.boss-name {
+    grid-area: name;
+    color: var(--primary);
+    font-weight: 700;
+    letter-spacing: 1px;
+    text-shadow: 0 0 8px rgba(255,140,42,.6);
+}
+
+.boss-hearts { grid-area: hearts; font-size: 18px; letter-spacing: 2px; }
+
+.boss-hp {
+    grid-area: hp;
+    height: 14px;
+    border: 1px solid #5c4020;
+    border-radius: 7px;
+    background: #1a1410;
+    overflow: hidden;
+}
+
+.boss-hp-fill {
+    height: 100%;
+    width: 100%;
+    background: linear-gradient(90deg, #ff2a00, #ff8c42, #ffcc44);
+    transition: width .2s ease-out;
+}
+
+.boss-field {
+    position: relative;
+    flex: 1;
+    overflow: hidden;
+}
+
+/* chefe + balão de fala: andam juntos */
+.boss-unit {
+    position: absolute;
+    left: 0;
+    top: 0;
+    z-index: 3;
+    transition: left .6s cubic-bezier(.3, .7, .4, 1), top .6s cubic-bezier(.3, .7, .4, 1);
+}
+
+.boss {
+    display: block;
+    width: 150px;
+    height: 145px;
+    padding: 0;
+    background: none;
+    border: none;
+    cursor: crosshair;
+    filter: drop-shadow(0 0 12px rgba(255,60,0,.6));
+}
+
+/* sem o quadrado branco de foco no mouse/toque; no teclado, contorno da forja */
+.boss:focus { outline: none; }
+.boss:focus-visible {
+    outline: 2px dashed var(--primary);
+    outline-offset: 4px;
+    border-radius: 16px;
+}
+
+.boss svg { width: 100%; height: 100%; overflow: visible; pointer-events: none; }
+.boss .brows { opacity: 1; }
+
+#boss-arena[data-phase="2"] .boss-unit { transition-duration: .45s; }
+#boss-arena[data-phase="2"] .boss .anger-mark { opacity: 1; }
+#boss-arena[data-phase="2"] .boss .anger-tint { opacity: .18; }
+#boss-arena[data-phase="3"] .boss-unit { transition-duration: .32s; }
+#boss-arena[data-phase="3"] .boss { filter: drop-shadow(0 0 18px rgba(255,0,0,.9)); }
+#boss-arena[data-phase="3"] .boss .anger-mark,
+#boss-arena[data-phase="3"] .boss .steam { opacity: 1; }
+#boss-arena[data-phase="3"] .boss .anger-tint { opacity: .35; }
+#boss-arena[data-phase="3"] .boss svg { animation: angry-shake .18s ease-in-out infinite; }
+
+.boss.hit svg { animation: boss-hit .25s ease-out; }
+
+@keyframes boss-hit {
+    0%   { transform: scale(1); filter: brightness(2.2); }
+    50%  { transform: scale(.88) rotate(-6deg); }
+    100% { transform: scale(1); filter: none; }
+}
+
+.boss-unit.defeated { animation: boss-defeat .9s ease-in forwards; }
+
+@keyframes boss-defeat {
+    0%   { transform: rotate(0) scale(1); opacity: 1; }
+    100% { transform: rotate(540deg) scale(0); opacity: 0; }
+}
+
+.boss.laughing svg { animation: laugh .25s ease-in-out infinite alternate; }
+
+.boss-say {
+    position: absolute;
+    bottom: calc(100% + 6px);
+    left: 50%;
+    transform: translateX(calc(-50% + var(--say-shift, 0px)));
+    width: max-content;
+    max-width: min(260px, 80vw);
+    background: #221c10;
+    border: 1px solid #5c4020;
+    border-radius: 12px;
+    padding: 6px 12px;
+    font-size: 14px;
+    text-align: center;
+    opacity: 0;
+    transition: opacity .2s;
+    pointer-events: none;
+    z-index: 3;
+}
+
+.boss-say.show { opacity: 1; }
+
+/* perto do topo da arena ele fala por baixo */
+.say-below .boss-say {
+    bottom: auto;
+    top: calc(100% + 6px);
+}
+
+/* erros que o chefe lança */
+.boss-bug {
+    position: absolute;
+    left: 0;
+    top: 0;
+    padding: 6px 10px;
+    min-height: 34px;
+    border-radius: 8px;
+    border: 1px solid #ff5e1a;
+    background: #2a0e06;
+    color: #ffb199;
+    font-family: 'Consolas', 'Courier New', monospace;
+    font-size: 13px;
+    font-weight: 700;
+    white-space: nowrap;
+    cursor: pointer;
+    box-shadow: 0 0 12px rgba(255,60,0,.5);
+    z-index: 2;
+}
+
+.boss-bug.squashed {
+    animation: squash .3s ease-out forwards;
+    pointer-events: none;
+}
+
+@keyframes squash {
+    to { opacity: 0; filter: blur(2px); scale: 1.6 .2; }
+}
+
+.boss-pop {
+    position: absolute;
+    transform: translateX(-50%);
+    font-weight: 700;
+    font-size: 20px;
+    pointer-events: none;
+    animation: pop-up .7s ease-out forwards;
+    z-index: 4;
+}
+
+.boss-pop.dmg { color: #ffcc44; text-shadow: 0 0 6px #ff5e1a; }
+
+@keyframes pop-up {
+    to { translate: 0 -40px; opacity: 0; }
+}
+
+.boss-end {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 16px;
+    background: rgba(10,6,4,.75);
+    z-index: 5;
+}
+
+.boss-end[hidden] { display: none; }
+
+.boss-end-box {
+    background: #1a1410;
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 20px 24px;
+    max-width: 360px;
+    text-align: center;
+    box-shadow: 0 0 40px rgba(255,80,0,.3);
+}
+
+.boss-end-box h2 { color: var(--primary); margin-bottom: 8px; }
+.boss-end-box p { margin-bottom: 14px; line-height: 1.5; }
+.boss-tip { color: var(--muted); font-size: 14px; }
+
+/* tela "Como jogar" */
+.boss-rules {
+    list-style: none;
+    text-align: left;
+    margin: 4px 0 16px;
+    padding: 0;
+    font-size: 15px;
+    line-height: 1.45;
+}
+
+.boss-rules li { margin: 8px 0; }
+.boss-rules strong { color: var(--hot); }
+
+.boss-end-box .f500-btn:focus-visible {
+    outline: 2px dashed var(--primary);
+    outline-offset: 3px;
+}
+
+@media (max-width: 480px) {
+    .boss { width: 110px; height: 106px; }
+    .boss-bug { font-size: 12px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    #boss-arena *,
+    #boss-arena { animation-duration: .01s !important; }
+}
+
 /* martela com raiva */
 #mascote-wrap[data-mood="3"] #hammer-arm { animation-duration: .9s; }
 
@@ -991,6 +1243,19 @@ body {
 
 #thought-bubble[data-placement="side"] {
     transform-origin: left center;
+}
+
+/* à esquerda do mascote (ele fugiu para a direita): seta para a direita */
+#thought-bubble[data-placement="side-left"]::after {
+    top: var(--pointer-top, 50%);
+    left: 100%;
+    transform: translateY(-50%);
+    border-width: 8px 0 8px 8px;
+    border-color: transparent transparent transparent #5c4020;
+}
+
+#thought-bubble[data-placement="side-left"] {
+    transform-origin: right center;
 }
 
 #thought-bubble {

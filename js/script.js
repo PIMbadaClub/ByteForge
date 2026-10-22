@@ -779,17 +779,15 @@ function positionBubble() {
   const mascoteCX = mascoteRect.left + mascoteRect.width / 2;
   const mascoteCY = mascoteRect.top + mascoteRect.height / 2;
 
-  // 1) Acima do título
+  // 1) Acima do título (se o mascote saiu do lugar fugindo, acima dele)
   bubble.dataset.placement = "above";
   bubble.style.maxWidth = `${Math.min(240, rightEdge - leftEdge)}px`;
   let width = bubble.offsetWidth;
   let height = bubble.offsetHeight;
   const above = titleRect.top - height - 10;
   if (above >= topEdge) {
-    const left = Math.max(leftEdge, Math.min(
-      titleRect.left + titleRect.width / 2 - width / 2,
-      rightEdge - width,
-    ));
+    const anchorX = dodgeX ? mascoteCX : titleRect.left + titleRect.width / 2;
+    const left = Math.max(leftEdge, Math.min(anchorX - width / 2, rightEdge - width));
     bubble.style.left = `${left}px`;
     bubble.style.top = `${above}px`;
     bubble.style.setProperty("--pointer-left",
@@ -797,16 +795,21 @@ function positionBubble() {
     return;
   }
 
-  // 2) Ao lado do mascote, com a seta apontando para ele
+  // 2) Ao lado do mascote, com a seta apontando para ele: à direita e, se ele
+  //    fugiu para a direita e não sobrou espaço, à esquerda
+  const appRect = document.getElementById("app").getBoundingClientRect();
   const sideLeft = mascoteRect.right + 6;
-  const appRight = document.getElementById("app").getBoundingClientRect().right - margin;
-  const sideWidth = Math.min(300, Math.min(rightEdge, appRight) - sideLeft);
-  if (sideWidth >= 150) {
-    bubble.dataset.placement = "side";
-    bubble.style.maxWidth = `${sideWidth}px`;
+  const sideWidth = Math.min(300, Math.min(rightEdge, appRect.right - margin) - sideLeft);
+  const sideRight = mascoteRect.left - 6;
+  const leftWidth = Math.min(300, sideRight - Math.max(leftEdge, appRect.left + margin));
+  const useLeft = sideWidth < 150 && leftWidth >= 150;
+  if (sideWidth >= 150 || useLeft) {
+    bubble.dataset.placement = useLeft ? "side-left" : "side";
+    bubble.style.maxWidth = `${useLeft ? leftWidth : sideWidth}px`;
+    width = bubble.offsetWidth;
     height = bubble.offsetHeight;
     const top = Math.max(topEdge, Math.min(mascoteCY - height / 2, bottomEdge - height));
-    bubble.style.left = `${sideLeft}px`;
+    bubble.style.left = `${useLeft ? sideRight - width : sideLeft}px`;
     bubble.style.top = `${top}px`;
     bubble.style.setProperty("--pointer-top",
       `${Math.max(14, Math.min(mascoteCY - top, height - 14))}px`);
@@ -990,8 +993,19 @@ function moveMascot(x, y) {
   dodgeX = Math.round(Math.max(lim.minX, Math.min(lim.maxX, x)));
   dodgeY = Math.round(Math.max(lim.minY, Math.min(lim.maxY, y)));
   mascoteWrap.style.translate = dodgeX || dodgeY ? `${dodgeX}px ${dodgeY}px` : "";
-  // o balão acompanha depois que ele termina de se mexer
-  if (bubble.classList.contains("show")) setTimeout(positionBubble, 260);
+  followMascot();
+}
+
+// O balão acompanha o mascote quadro a quadro enquanto ele se mexe
+let followUntil = 0;
+function followMascot(ms = 350) {
+  const running = followUntil > performance.now();
+  followUntil = performance.now() + ms;
+  if (running) return;
+  requestAnimationFrame(function step() {
+    if (bubble.classList.contains("show")) positionBubble();
+    if (performance.now() < followUntil) requestAnimationFrame(step);
+  });
 }
 
 function jumpToRandomSpot() {
@@ -1027,15 +1041,55 @@ document.addEventListener("mousemove", (e) => {
 // ERRO 500 FAKE — clicou demais com ele furioso, ele "derruba o site"
 // ════════════════════════════════════════════════════════════
 const RAGE_CLICKS = 3 * CLICKS_PER_LEVEL + 6; // 5 cliques depois de ficar furioso
+const SITE_DOWN_KEY = "byteforge-site-derrubado"; // F5 não salva ninguém
 let crashed = false;
 
-function crashSite() {
+// Cópia do mascote do cabeçalho (sem ids, para não duplicar) com outra cara
+function cloneMascot({ mouth, mouthFill = "none", brows = null }) {
+  const svg = document.getElementById("byteforge").cloneNode(true);
+  svg.querySelector("#bot-mouth").setAttribute("d", mouth);
+  svg.querySelector("#bot-mouth").setAttribute("fill", mouthFill);
+  if (brows) {
+    const [x1, y1, x2, y2] = brows;
+    const left = svg.querySelector("#brow-left");
+    const right = svg.querySelector("#brow-right");
+    left.setAttribute("x1", x1); left.setAttribute("y1", y1);
+    left.setAttribute("x2", x2); left.setAttribute("y2", y2);
+    right.setAttribute("x1", 100 - x1); right.setAttribute("y1", y1);
+    right.setAttribute("x2", 100 - x2); right.setAttribute("y2", y2);
+  } else {
+    svg.querySelector(".brows").remove();
+  }
+  svg.querySelectorAll("[id]").forEach((el) => el.removeAttribute("id"));
+  svg.removeAttribute("id");
+  svg.setAttribute("aria-hidden", "true");
+  return svg;
+}
+
+function setSiteDown(down) {
+  try {
+    if (down) localStorage.setItem(SITE_DOWN_KEY, "1");
+    else localStorage.removeItem(SITE_DOWN_KEY);
+  } catch {}
+}
+
+function isSiteDown() {
+  try { return localStorage.getItem(SITE_DOWN_KEY) === "1"; } catch { return false; }
+}
+
+// O site só volta se o aluno vencer a boss fight (js/boss.js)
+function crashSite({ reloaded = false } = {}) {
   crashed = true;
+  setSiteDown(true);
   clearTimeout(calmTimer);
   clearTimeout(bubbleTimer);
   bubble.classList.remove("show");
-  const originalTitle = document.title;
+  const originalTitle = "ByteForge";
   document.title = "500 Internal Server Error";
+
+  const taunt = reloaded
+    ? "😈 Achou que um F5 ia te salvar? <strong>O site continua fora do ar.</strong><br><small>Quer ele de volta? Vai ter que me derrotar.</small>"
+    : `😈 <strong>Derrubei o site!</strong> Isso que dá clicar ${clickStreak} vezes em mim.<br><small>Quer ele de volta? Vai ter que me derrotar.</small>`;
 
   const overlay = document.createElement("div");
   overlay.id = "fake-500";
@@ -1051,47 +1105,35 @@ function crashSite() {
       <address>ByteForge/1.0 (Bigorna) Server at ${location.hostname} Port 443</address>
     </div>
     <div class="f500-reveal">
-      <div class="f500-bubble">😈 <strong>Pegadinha!</strong> Não caiu nada... eu só precisava esfriar a cabeça.<br><small>Você clicou ${clickStreak} vezes em mim, hein?</small></div>
-      <button type="button" class="f500-btn">🔥 Religar a forja</button>
+      <div class="f500-bubble">${taunt}</div>
+      <button type="button" class="f500-btn">⚔️ Encarar o chefe</button>
     </div>`;
 
-  // mascote rindo, copiado do cabeçalho (sem ids, para não duplicar)
-  const laugh = document.getElementById("byteforge").cloneNode(true);
-  const grin = laugh.querySelector("#bot-mouth");
-  grin.setAttribute("d", "M 43 57 Q 50 67 57 57 Z"); // boca aberta, gargalhando
-  grin.setAttribute("fill", "#3a1f04");
-  laugh.querySelectorAll("[id]").forEach((el) => el.removeAttribute("id"));
-  laugh.removeAttribute("id");
-  laugh.querySelector(".brows")?.remove();
-  laugh.setAttribute("aria-hidden", "true");
-  overlay.querySelector(".f500-reveal").prepend(laugh);
+  // mascote gargalhando
+  overlay.querySelector(".f500-reveal").prepend(
+    cloneMascot({ mouth: "M 43 57 Q 50 67 57 57 Z", mouthFill: "#3a1f04" }),
+  );
 
   document.body.appendChild(overlay);
   setMood(0);
   moveMascot(0, 0);
 
-  const revealTimer = setTimeout(() => {
+  setTimeout(() => {
     overlay.classList.add("reveal");
     overlay.querySelector(".f500-btn").focus();
-  }, 2800);
+  }, reloaded ? 1200 : 2800);
 
   function restore() {
-    clearTimeout(revealTimer);
-    document.removeEventListener("keydown", onKey);
     overlay.remove();
+    setSiteDown(false);
     document.title = originalTitle;
     crashed = false;
     clickStreak = 0;
     moveMascot(0, 0);
-    showBubble("😌 Pronto, forja religada. Agora vamos com calma, combinado?");
+    showBubble("😵 Tá bom, tá bom, você venceu! Forja religada. Agora vamos estudar, combinado?");
   }
 
-  function onKey(e) {
-    if (e.key === "Escape") restore();
-  }
-
-  overlay.querySelector(".f500-btn").onclick = restore;
-  document.addEventListener("keydown", onKey);
+  overlay.querySelector(".f500-btn").onclick = () => startBossFight(restore);
 }
 
 // Clique no mascote → pula + reação (ou bronca, se clicar demais)
@@ -1164,3 +1206,6 @@ document.addEventListener("mousemove", (e) => {
   if (eyePupilRight)
     eyePupilRight.style.transform = `translate(${dx}px, ${dy}px)`;
 });
+
+// Site derrubado numa visita anterior continua fora até vencer o chefe
+if (isSiteDown()) crashSite({ reloaded: true });
