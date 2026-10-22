@@ -48,7 +48,7 @@ function addMsg(text, side, options = {}) {
   wrap.appendChild(bubble);
   wrap.appendChild(time);
   chatWin.appendChild(wrap);
-  scrollDown(true);
+  return wrap;
 }
 
 function escapeHtml(text) {
@@ -300,7 +300,7 @@ function addCodeBlock(code, lang) {
   block.appendChild(header);
   block.appendChild(pre);
   chatWin.appendChild(block);
-  scrollDown(true);
+  return block;
 }
 
 // ════════════════════════════════════════════════════════════
@@ -315,7 +315,6 @@ function showTyping() {
                 <span class="dot"></span>
                 <span class="dot"></span>`;
   chatWin.appendChild(wrap);
-  wrap.scrollIntoView({ behavior: "smooth", block: "start" });
 }
 
 function hideTyping() {
@@ -327,21 +326,75 @@ function hideTyping() {
 // EXIBIR RESPOSTA DE IA
 // ════════════════════════════════════════════════════════════
 function renderAiResponse(response) {
+  const followResponse = isNearBottom();
+  hideTyping();
+  let firstPart;
+
   response.parts.forEach((part) => {
+    let element;
     if (part.type === "text") {
-      addMsg(renderTextMarkdown(part.content), "bot", { html: true });
+      element = addMsg(renderTextMarkdown(part.content), "bot", { html: true });
     } else if (part.type === "code") {
-      addCodeBlock(part.content, part.lang || "text");
+      element = addCodeBlock(part.content, part.lang || "text");
     }
+    firstPart ||= element;
   });
+
+  if (!firstPart) return;
+  // Mostra a pergunta e o início da resposta sem interromper a leitura do histórico.
+  if (followResponse) {
+    const question = firstPart.previousElementSibling;
+    const anchor = question?.classList.contains("user") ? question : firstPart;
+    scrollChatTo(offsetInChat(anchor), true);
+  } else {
+    pendingAnswer = firstPart;
+    showJumpButton();
+  }
 }
+
+function offsetInChat(el) {
+  const padding = parseFloat(getComputedStyle(chatWin).paddingTop);
+  return chatWin.scrollTop + el.getBoundingClientRect().top
+    - chatWin.getBoundingClientRect().top - chatWin.clientTop - padding;
+}
+
+// ════════════════════════════════════════════════════════════
+// BOTÃO "NOVA RESPOSTA" — aparece se chegou resposta enquanto
+// o usuário lia mensagens antigas
+// ════════════════════════════════════════════════════════════
+const jumpBtn = document.createElement("button");
+jumpBtn.id = "jump-btn";
+jumpBtn.type = "button";
+jumpBtn.textContent = "↓ Nova resposta";
+document.getElementById("app").appendChild(jumpBtn);
+let pendingAnswer = null;
+
+function showJumpButton() {
+  const app = document.getElementById("app").getBoundingClientRect();
+  const chat = chatWin.getBoundingClientRect();
+  jumpBtn.style.setProperty("--jump-bottom", `${app.bottom - chat.bottom + 12}px`);
+  jumpBtn.classList.add("show");
+}
+
+jumpBtn.onclick = () => {
+  scrollChatTo(pendingAnswer ? offsetInChat(pendingAnswer) : chatWin.scrollHeight, true);
+  pendingAnswer = null;
+  jumpBtn.classList.remove("show");
+};
+
+chatWin.addEventListener("scroll", () => {
+  if (jumpBtn.classList.contains("show") && isNearBottom()) {
+    pendingAnswer = null;
+    jumpBtn.classList.remove("show");
+  }
+}, { passive: true });
 
 // ════════════════════════════════════════════════════════════
 // ENVIAR MENSAGEM
 // ════════════════════════════════════════════════════════════
 async function sendMessage() {
   const text = input.value.trim();
-  if (!text) return;
+  if (!text || sendBtn.disabled) return;
 
   // Reinicia e reproduz o som da bigorna
   anvilSound.currentTime = 0;
@@ -354,21 +407,30 @@ async function sendMessage() {
   showTyping();
   sendBtn.disabled = true;
   input.disabled = true;
+  scrollDown();
 
   try {
     const response = await getAIResponse(text);
     renderAiResponse(response);
+    reactToTopic(text);
   } catch (error) {
     console.error("Erro ao gerar resposta de IA:", error);
-    addMsg(
-      "Desculpe, algo deu errado ao buscar a resposta. Tente novamente em alguns instantes.",
-      "bot",
-    );
+    renderAiResponse({
+      parts: [{
+        type: "text",
+        content: "Desculpe, algo deu errado ao buscar a resposta. Tente novamente em alguns instantes.",
+      }],
+    });
   } finally {
     hideTyping();
     sendBtn.disabled = false;
     input.disabled = false;
-    input.focus();
+    if (
+      window.matchMedia("(hover: hover) and (pointer: fine)").matches &&
+      [document.body, sendBtn].includes(document.activeElement)
+    ) {
+      input.focus({ preventScroll: true });
+    }
   }
 }
 
@@ -376,6 +438,7 @@ async function sendMessage() {
 // QUICK ASK — botões de tópico rápido
 // ════════════════════════════════════════════════════════════
 function quickAsk(topic) {
+  if (sendBtn.disabled) return;
   input.value = topic;
   sendMessage();
 }
@@ -385,14 +448,25 @@ function quickAsk(topic) {
 // ════════════════════════════════════════════════════════════
 function clearChat() {
   chatWin.innerHTML = "";
+  pendingAnswer = null;
+  jumpBtn.classList.remove("show");
   init();
 }
 
-function scrollDown(smooth = false) {
+function isNearBottom() {
+  return chatWin.scrollHeight - chatWin.clientHeight - chatWin.scrollTop <= 80;
+}
+
+function scrollChatTo(top, smooth = false) {
+  const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
   chatWin.scrollTo({
-    top: chatWin.scrollHeight,
-    behavior: smooth ? "smooth" : "auto",
+    top,
+    behavior: smooth && !reducedMotion ? "smooth" : "auto",
   });
+}
+
+function scrollDown(smooth = false) {
+  scrollChatTo(chatWin.scrollHeight, smooth);
 }
 
 // ════════════════════════════════════════════════════════════
@@ -457,6 +531,30 @@ const thoughts = [
   "⌨️ Se deu erro, reajusta. Se não deu, documenta.",
   "🐞 Bugs e café: a dieta padrão do dev forjador.",
   "🛠️ Refatorar é forjar duas vezes para ficar melhor.",
+  "🦆 Expliquei o bug pro patinho de borracha. Ele pediu demissão.",
+  "📦 node_modules pesa mais que a minha bigorna.",
+  "🕳️ Existem 10 tipos de devs: os que entendem binário e os que não.",
+  "⏳ 'É rapidinho' — disse o dev, três sprints atrás.",
+  "🧯 Hotfix em produção: forjar com o martelo pegando fogo.",
+  "🍝 Esse código legado é macarronada com molho de goto.",
+  "🌙 Programador não dorme, entra em modo de espera.",
+  "🔍 Passei 2 horas caçando bug. Era um ponto e vírgula.",
+  "🧩 Funciona e eu não sei por quê. Não funciona e eu também não sei.",
+  "📅 Estimativa de dev: pegue o número, dobre e troque a unidade.",
+  "🤖 Eu não erro. Eu gero exceções não documentadas.",
+  "🧱 A dívida técnica tá rendendo mais juros que a poupança.",
+  "📜 Documentação? O código é autoexplicativo... pra mim, ontem.",
+  "🐢 Meu código não é lento, ele é contemplativo.",
+  "🔐 Senha forte: 'senha123' com uma bigorna em cima.",
+  "🎯 99 bugs no código. Corrige um, compila... 127 bugs no código.",
+  "🧪 Teste unitário passou. O teste de 'abrir no celular do chefe', não.",
+  "🌐 Funciona no Chrome. No Safari a gente reza.",
+  "🪓 Comentei o código inteiro. Agora compila!",
+  "🧘 Respira... é só um merge conflict de 400 linhas.",
+  "☕ Café: o verdadeiro combustível desta forja.",
+  "🚀 Subi pra produção sexta 17h59. Até segunda, se tudo der certo.",
+  "🗿 Variável chamada 'x2_final_agora_vai'. Clássico.",
+  "🎲 Regex: resolvi um problema, agora tenho dois.",
 ];
 
 // Reações ao clique — tema forja
@@ -480,39 +578,185 @@ const reactions = [
   "🧠 Git é meu caderninho de versão; branch é mapa do tesouro.",
   "⌨️ Se o código não funciona, acrescente mais café. Ou teste.",
   "🧪 A melhor feature é a que buga menos na reunião de deploy.",
+  "😵 Ei! Cuidado que eu tô segurando um martelo!",
+  "🙃 Clicar em mim não resolve o bug... mas ajuda na moral.",
+  "🛡️ Toca de novo e eu faço um git blame em você.",
+  "🔨 Mais um clique e eu viro um loop infinito de pulos.",
+  "🥵 Tá quente aqui, hein? Ah, é a forja mesmo.",
+  "🫡 ByteForge à disposição, capitão!",
+  "🎤 Testando, testando... 1, 2, 3... 0x04?",
+  "🐉 Eu já forjei espada de dragão. Seu CRUD é moleza.",
+  "🍕 Pagamento aceito em pizza e estrelinha no GitHub.",
+  "🤓 Curiosidade: o primeiro bug foi uma mariposa de verdade (1947).",
+  "🙈 Não olha pro meu código de 2019, por favor.",
+  "📣 Lembrete: salve o arquivo. Agora. Confia.",
+];
+
+// Piadinhas por assunto da pergunta
+const topicJokes = [
+  { keys: ["javascript", " js", "node", "react"], jokes: [
+    "🟨 JavaScript: onde [] + {} é '[object Object]' e tá tudo bem.",
+    "🟨 '1' + 1 = '11'. '1' - 1 = 0. JS é arte abstrata.",
+    "🟨 Usei var em 2026. A bigorna chorou.",
+  ] },
+  { keys: ["typescript", " ts"], jokes: [
+    "🔷 TypeScript: JavaScript que foi pra terapia.",
+    "🔷 any é o 'deixa quieto' do TypeScript.",
+  ] },
+  { keys: ["python", "django", "flask"], jokes: [
+    "🐍 Python: onde um espaço a mais derruba a forja inteira.",
+    "🐍 import antigravity — e o dev saiu voando.",
+    "🐍 Tab ou espaço? Aqui é martelo.",
+  ] },
+  { keys: ["git", "commit", "branch", "merge"], jokes: [
+    "🌿 git push --force: o martelo mais perigoso da forja.",
+    "🌿 Mensagem do commit: 'ajustes'. 47 arquivos alterados.",
+    "🌿 Git blame apontou pra mim. Que ofensa.",
+  ] },
+  { keys: ["css", "flex", "grid", "layout"], jokes: [
+    "🎨 Centralizar uma div: o desafio final de todo herói.",
+    "🎨 CSS é fácil, disse ninguém depois do z-index: 9999.",
+    "🎨 !important em tudo. A forja virou anarquia.",
+  ] },
+  { keys: ["sql", "banco", "database", "query"], jokes: [
+    "🗄️ DELETE sem WHERE: o grito mais rápido da TI.",
+    "🗄️ Um SELECT entra num bar e pergunta: posso dar JOIN em vocês?",
+    "🗄️ Backup? Eu achava que você tinha feito.",
+  ] },
+  { keys: ["docker", "container", "kubernetes"], jokes: [
+    "🐳 'Funciona na minha máquina.' — Então mandamos a sua máquina. Nasceu o Docker.",
+    "🐳 Container: a marmita do deploy.",
+  ] },
+  { keys: ["api", "rest", "http", "endpoint"], jokes: [
+    "🌐 HTTP 418: sou uma bigorna, não uma chaleira.",
+    "🌐 Status 200 com { erro: true } no corpo. Clássico.",
+  ] },
+  { keys: ["debug", "erro", "bug", "exception"], jokes: [
+    "🐞 Debug: ser o detetive num crime em que você é o culpado.",
+    "🐞 console.log('aqui'), console.log('aqui2'), console.log('AQUIIII')",
+  ] },
+  { keys: ["carreira", "emprego", "estágio", "estagio", "vaga"], jokes: [
+    "💼 Vaga júnior: 5 anos de experiência em framework de 2 anos.",
+    "💼 Dica de carreira: aprenda a ler erro antes de colar no Google.",
+  ] },
 ];
 
 let bubbleTimer;
 
+// Escolhe onde o balão cabe inteiro: acima do título (desktop), ao lado do
+// mascote (celular, cobrindo o título por alguns segundos) ou abaixo dele.
+function positionBubble() {
+  const titleRect = document.querySelector(".header-info h1").getBoundingClientRect();
+  const mascoteRect = mascoteWrap.getBoundingClientRect();
+  const viewport = window.visualViewport;
+  const margin = 10;
+  const leftEdge = (viewport?.offsetLeft || 0) + margin;
+  const topEdge = (viewport?.offsetTop || 0) + margin;
+  const rightEdge = leftEdge + (viewport?.width || window.innerWidth) - margin * 2;
+  const bottomEdge = topEdge + (viewport?.height || window.innerHeight) - margin * 2;
+  const mascoteCX = mascoteRect.left + mascoteRect.width / 2;
+  const mascoteCY = mascoteRect.top + mascoteRect.height / 2;
+
+  // 1) Acima do título
+  bubble.dataset.placement = "above";
+  bubble.style.maxWidth = `${Math.min(240, rightEdge - leftEdge)}px`;
+  let width = bubble.offsetWidth;
+  let height = bubble.offsetHeight;
+  const above = titleRect.top - height - 10;
+  if (above >= topEdge) {
+    const left = Math.max(leftEdge, Math.min(
+      titleRect.left + titleRect.width / 2 - width / 2,
+      rightEdge - width,
+    ));
+    bubble.style.left = `${left}px`;
+    bubble.style.top = `${above}px`;
+    bubble.style.setProperty("--pointer-left",
+      `${Math.max(16, Math.min(mascoteCX - left, width - 16))}px`);
+    return;
+  }
+
+  // 2) Ao lado do mascote, com a seta apontando para ele
+  const sideLeft = mascoteRect.right + 6;
+  const appRight = document.getElementById("app").getBoundingClientRect().right - margin;
+  const sideWidth = Math.min(300, Math.min(rightEdge, appRight) - sideLeft);
+  if (sideWidth >= 150) {
+    bubble.dataset.placement = "side";
+    bubble.style.maxWidth = `${sideWidth}px`;
+    height = bubble.offsetHeight;
+    const top = Math.max(topEdge, Math.min(mascoteCY - height / 2, bottomEdge - height));
+    bubble.style.left = `${sideLeft}px`;
+    bubble.style.top = `${top}px`;
+    bubble.style.setProperty("--pointer-top",
+      `${Math.max(14, Math.min(mascoteCY - top, height - 14))}px`);
+    return;
+  }
+
+  // 3) Abaixo do mascote
+  bubble.dataset.placement = "below";
+  bubble.style.maxWidth = `${rightEdge - leftEdge}px`;
+  width = bubble.offsetWidth;
+  height = bubble.offsetHeight;
+  const left = Math.max(leftEdge, Math.min(mascoteCX - 24, rightEdge - width));
+  bubble.style.left = `${left}px`;
+  bubble.style.top = `${Math.min(mascoteRect.bottom + 10, bottomEdge - height)}px`;
+  bubble.style.setProperty("--pointer-left",
+    `${Math.max(16, Math.min(mascoteCX - left, width - 16))}px`);
+}
+
 function showBubble(text) {
   clearTimeout(bubbleTimer);
-  bubble.classList.remove("show");
-
-  const titleEl = document.querySelector(".header-info h1");
-  const titleRect = titleEl.getBoundingClientRect();
-  const mascoteRect = mascoteWrap.getBoundingClientRect();
-
   bubble.textContent = text;
-  bubble.style.left = titleRect.left + titleRect.width / 2 + "px";
-  bubble.style.transform = "translate(-50%, 0)";
-
-  // força reflow para a transição funcionar após adicionar o texto
-  void bubble.offsetWidth;
-
-  const bubbleLeft =
-    titleRect.left + titleRect.width / 2 - bubble.offsetWidth / 2;
-  const botCenterX = mascoteRect.left + mascoteRect.width / 2;
-  const pointerX = Math.min(
-    Math.max(botCenterX - bubbleLeft, 16),
-    bubble.offsetWidth - 16,
-  );
-  bubble.style.setProperty("--pointer-left", `${pointerX}px`);
-
-  bubble.style.top = titleRect.top - bubble.offsetHeight - 10 + "px";
+  positionBubble();
   bubble.classList.add("show");
-
-  bubbleTimer = setTimeout(() => bubble.classList.remove("show"), 3800);
+  // Tempo de leitura proporcional ao tamanho da piada
+  const duration = Math.min(9000, 2500 + text.length * 55);
+  bubbleTimer = setTimeout(() => bubble.classList.remove("show"), duration);
 }
+
+// Sorteia sem repetir até esgotar a lista
+function shuffleBag(list) {
+  let bag = [];
+  return () => {
+    if (!bag.length) bag = [...list].sort(() => Math.random() - 0.5);
+    return bag.pop();
+  };
+}
+
+const nextThought = shuffleBag(thoughts);
+const nextReaction = shuffleBag(reactions);
+
+// Piadinha sobre o assunto da pergunta (palavra-chave → lista)
+function reactToTopic(text) {
+  const lower = " " + text.toLowerCase();
+  const topic = topicJokes.find(({ keys }) => keys.some((k) => lower.includes(k)));
+  if (!topic) return;
+  setTimeout(() => {
+    showBubble(topic.jokes[Math.floor(Math.random() * topic.jokes.length)]);
+  }, 900);
+}
+
+function syncViewport() {
+  const viewport = window.visualViewport;
+  const atBottom = isNearBottom();
+  // A altura visível acompanha o teclado sem redimensionar o app durante o zoom.
+  if (!viewport || viewport.scale === 1) {
+    document.documentElement.classList.toggle(
+      "short-viewport", (viewport?.height || window.innerHeight) < 320,
+    );
+    document.documentElement.style.setProperty(
+      "--viewport-height", `${viewport?.height || window.innerHeight}px`,
+    );
+    if (atBottom) scrollDown();
+  }
+  if (bubble.classList.contains("show")) positionBubble();
+}
+
+window.addEventListener("resize", syncViewport);
+window.visualViewport?.addEventListener("resize", syncViewport);
+window.visualViewport?.addEventListener("scroll", () => {
+  if (bubble.classList.contains("show")) positionBubble();
+});
+syncViewport();
 
 // Clique no mascote → pula + reação
 mascoteWrap.addEventListener("click", () => {
@@ -527,16 +771,15 @@ mascoteWrap.addEventListener("click", () => {
     { once: true },
   );
 
-  const r = reactions[Math.floor(Math.random() * reactions.length)];
-  showBubble(r);
+  showBubble(nextReaction());
 });
 
 // Pensamentos automáticos (12 – 22 s)
 function schedulePensamento() {
   const delay = 12000 + Math.random() * 10000;
   setTimeout(() => {
-    const t = thoughts[Math.floor(Math.random() * thoughts.length)];
-    showBubble(t);
+    // Não interrompe uma piada que ainda está na tela
+    if (!bubble.classList.contains("show")) showBubble(nextThought());
     schedulePensamento();
   }, delay);
 }

@@ -31,11 +31,12 @@ body {
         var(--bg);
 
     min-height: 100vh;
+    min-height: var(--viewport-height, 100dvh);
     display: flex;
     justify-content: center;
     align-items: center;
     font-family: 'Georgia', 'Segoe UI', serif;
-    padding: 16px env(safe-area-inset-right, 16px) calc(16px + env(safe-area-inset-bottom, 0px)) env(safe-area-inset-left, 16px);
+    padding: 16px max(16px, env(safe-area-inset-right, 0px)) calc(16px + env(safe-area-inset-bottom, 0px)) max(16px, env(safe-area-inset-left, 0px));
     position: relative;
     overflow: hidden;
 }
@@ -104,8 +105,10 @@ body {
 #app {
     width: 480px;
     max-width: 100%;
-    height: min(740px, calc(100dvh - 32px - env(safe-area-inset-bottom, 0px)));
-    max-height: calc(100dvh - 32px - env(safe-area-inset-bottom, 0px)); /* Respeita o padding da página e a área segura */
+    height: min(740px, calc(100vh - 32px - env(safe-area-inset-bottom, 0px)));
+    height: min(740px, calc(var(--viewport-height, 100dvh) - 32px - env(safe-area-inset-bottom, 0px)));
+    max-height: calc(100vh - 32px - env(safe-area-inset-bottom, 0px));
+    max-height: calc(var(--viewport-height, 100dvh) - 32px - env(safe-area-inset-bottom, 0px)); /* Respeita o padding da página e a área segura */
 
     /* metal escuro com gradiente de calor na base */
     background:
@@ -129,6 +132,13 @@ body {
     overflow: hidden;
     position: relative;
     z-index: 1; /* Mantém o app na frente do fogo */
+}
+
+/* Mantém os controles visíveis enquanto apenas o histórico rola. */
+#header,
+#atalhos,
+#input-area {
+    flex-shrink: 0;
 }
 
 /* brilho de brasa na borda inferior do app */
@@ -245,9 +255,12 @@ body {
 #chat-window {
     flex: 1;
     min-height: 0; /* Permite scroll correto em layout Flexbox */
+    min-width: 0;
     padding: 16px;
+    overflow-x: hidden;
     overflow-y: auto;
-    scroll-behavior: smooth;
+    overscroll-behavior-y: contain;
+    scroll-behavior: auto;
     display: flex;
     flex-direction: column;
     gap: 10px;
@@ -262,6 +275,10 @@ body {
             rgba(255,140,42,.015) 25px
         ),
         linear-gradient(180deg, #0e0a06 0%, #120c08 100%);
+}
+
+#chat-window > * {
+    flex-shrink: 0;
 }
 
 .msg-wrap {
@@ -464,6 +481,7 @@ body {
 
 #user-input {
     flex: 1;
+    min-width: 0;
     background: #1a1410;
     border: 1px solid var(--border);
     border-radius: 10px;
@@ -486,6 +504,7 @@ body {
 }
 
 #send-btn {
+    flex-shrink: 0;
     background: linear-gradient(145deg, #ff8c42, #cc5500);
     border: none;
     width: 42px;
@@ -591,7 +610,8 @@ body {
     padding: 8px 14px;
     font-size: 13px;
     color: var(--text);
-    max-width: 220px;
+    max-width: min(220px, calc(100vw - 24px));
+    overflow-wrap: anywhere;
     width: max-content;
     line-height: 1.4;
     pointer-events: none;
@@ -613,6 +633,82 @@ body {
     border-style: solid;
     border-width: 8px 8px 0 8px;
     border-color: #5c4020 transparent transparent transparent;
+}
+
+#thought-bubble[data-placement="below"]::after {
+    top: auto;
+    bottom: 100%;
+    border-width: 0 8px 8px;
+    border-color: transparent transparent #5c4020;
+}
+
+/* ao lado do mascote (celular): seta apontando para a esquerda */
+#thought-bubble[data-placement="side"]::after {
+    top: var(--pointer-top, 50%);
+    left: auto;
+    right: 100%;
+    transform: translateY(-50%);
+    border-width: 8px 8px 8px 0;
+    border-color: transparent #5c4020 transparent transparent;
+}
+
+#thought-bubble[data-placement="side"] {
+    transform-origin: left center;
+}
+
+#thought-bubble {
+    transform: scale(.92);
+    transition: opacity .25s, transform .25s cubic-bezier(.2, .9, .3, 1.3);
+}
+
+#thought-bubble.show { transform: scale(1); }
+
+/* ── ENTRADA DAS MENSAGENS ────────────────────────────────── */
+@keyframes msg-in {
+    from { opacity: 0; transform: translateY(8px); }
+    to   { opacity: 1; transform: none; }
+}
+
+#chat-window > .msg-wrap,
+#chat-window > .code-block,
+#chat-window > .typing-indicator {
+    animation: msg-in .22s ease-out;
+}
+
+/* ── BOTÃO "NOVA RESPOSTA" ────────────────────────────────── */
+#jump-btn {
+    position: absolute;
+    left: 50%;
+    bottom: var(--jump-bottom, 140px);
+    transform: translate(-50%, 8px);
+    background: linear-gradient(145deg, #ff8c42, #cc5500);
+    color: #1a0e06;
+    font-weight: 700;
+    font-size: 13px;
+    border: none;
+    border-radius: 20px;
+    padding: 7px 14px;
+    cursor: pointer;
+    box-shadow: 0 4px 16px rgba(0,0,0,.6), 0 0 12px rgba(255,94,26,.4);
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity .2s, transform .2s;
+    z-index: 5;
+}
+
+#jump-btn.show {
+    opacity: 1;
+    pointer-events: auto;
+    transform: translate(-50%, 0);
+}
+
+@media (prefers-reduced-motion: reduce) {
+    #chat-window > *,
+    #thought-bubble {
+        animation: none;
+        transition: opacity .2s;
+        transform: none;
+    }
 }
 
 /* ── TYPING INDICATOR ─────────────────────────────────────── */
@@ -655,32 +751,126 @@ body {
 ::-webkit-scrollbar-thumb:hover { background: #5c4820; }
 
 /* ── RESPONSIVIDADE MOBILE ────────────────────────────────── */
-@media (max-width: 480px) {
-    /* Botão Limpar flutuante sobre a entrada, mais acessível no celular */
-    #clear-btn {
-        position: absolute;
-        bottom: 84px; /* Fica acima da barra de atalhos e input */
-        right: 16px;
-        width: 44px;
-        height: 44px;
+@media (max-width: 480px), (max-width: 900px) and (max-height: 500px) {
+    body {
         padding: 0;
-        font-size: 0; /* Esconde a palavra "Limpar" */
-        border-radius: 50%;
-        background: #1a1410;
-        box-shadow: 0 4px 12px rgba(0,0,0,0.6);
-        border: 1px solid var(--border);
-        color: var(--text);
-        z-index: 10;
+    }
+
+    #app {
+        width: 100%;
+        height: 100vh;
+        height: var(--viewport-height, 100dvh);
+        max-height: 100vh;
+        max-height: var(--viewport-height, 100dvh);
+        border: 0;
+        border-radius: 0;
+    }
+
+    #header {
+        padding: calc(8px + env(safe-area-inset-top, 0px)) calc(12px + env(safe-area-inset-right, 0px)) 8px calc(12px + env(safe-area-inset-left, 0px));
+        gap: 10px;
+    }
+
+    #mascote-wrap {
+        width: 72px;
+    }
+
+    #mascote-wrap svg {
+        width: 72px;
+        height: 84px;
+    }
+
+    .header-info h1 {
+        font-size: 18px;
+        letter-spacing: 1px;
+    }
+
+    .status {
+        font-size: 11px;
+    }
+
+    .status-dot {
+        flex-shrink: 0;
+    }
+
+    #clear-btn {
+        flex-shrink: 0;
+        width: 36px;
+        height: 36px;
+        padding: 0;
+        font-size: 0;
         display: flex;
         align-items: center;
         justify-content: center;
     }
+
     #clear-btn::before {
         content: '\232B';
         font-size: 20px;
         color: inherit;
     }
+
     #clock {
-        display: none; /* Esconde o relógio no celular para o título respirar */
+        display: none;
     }
+
+    #chat-window {
+        padding: 12px max(12px, env(safe-area-inset-right, 0px)) 12px max(12px, env(safe-area-inset-left, 0px));
+    }
+
+    .msg-wrap {
+        max-width: 92%;
+    }
+
+    .msg {
+        padding: 12px 14px;
+    }
+
+    #atalhos {
+        flex-wrap: nowrap;
+        overflow-x: auto;
+        overscroll-behavior-x: contain;
+        scrollbar-width: none; /* rola com o dedo, sem barra grossa embaixo */
+        padding-right: calc(12px + env(safe-area-inset-right, 0px));
+        padding-left: calc(12px + env(safe-area-inset-left, 0px));
+    }
+
+    #atalhos::-webkit-scrollbar {
+        display: none;
+    }
+
+    .atalho {
+        flex-shrink: 0;
+        white-space: nowrap;
+        padding: 6px 14px; /* alvo de toque maior */
+    }
+}
+
+/* Preserva a entrada quando o teclado deixa pouca altura disponível. */
+.short-viewport #header {
+    padding-top: calc(6px + env(safe-area-inset-top, 0px));
+    padding-bottom: 6px;
+}
+
+.short-viewport #mascote-wrap {
+    width: 40px;
+}
+
+.short-viewport #mascote-wrap svg {
+    width: 40px;
+    height: 46px;
+}
+
+.short-viewport .status,
+.short-viewport #atalhos {
+    display: none;
+}
+
+.short-viewport #chat-window {
+    padding-top: 4px;
+    padding-bottom: 4px;
+}
+
+.short-viewport #input-area {
+    padding: 8px calc(8px + env(safe-area-inset-right, 0px)) calc(8px + env(safe-area-inset-bottom, 0px)) calc(8px + env(safe-area-inset-left, 0px));
 }
